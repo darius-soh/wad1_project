@@ -1,15 +1,19 @@
 <%- include("common/header", { title: title }) %>
 
+<!-- Page heading -->
 <h2>Add Song</h2>
 
+<!-- Error message -->
 <% if (error) { %>
   <p class="error"><%= error %></p>
 <% } %>
 
+<!-- Back link if playlist is missing -->
 <% if (!playlist) { %>
   <p><a href="/playlists">Back to playlists</a></p>
 <% } %>
 
+<!-- Add song form -->
 <% if (playlist) { %>
   <p><strong>Playlist:</strong> <%= playlist.name %></p>
 

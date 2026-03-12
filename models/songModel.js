@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Song schema.
 const songSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -32,21 +33,30 @@ const songSchema = new mongoose.Schema({
   }
 });
 
+// Song model.
 const Song = mongoose.model("Song", songSchema);
 
+// Get all songs for one playlist.
 async function getSongsByPlaylistId(playlistId) {
+  // Return every song linked to the selected playlist.
   return await Song.find({ playlistId: playlistId });
 }
 
+// Get one song by ID.
 async function getSongById(id) {
+  // Find one song using its MongoDB ID.
   return await Song.findById(id);
 }
 
+// Create one song.
 async function createSong(data) {
+  // Insert a new song document.
   return await Song.create(data);
 }
 
+// Delete one song by ID.
 async function deleteSongById(id) {
+  // Remove the matching song document.
   return await Song.findByIdAndDelete(id);
 }
 
