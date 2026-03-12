@@ -1,7 +1,24 @@
-require("dotenv").config({ path: "./config.env" });
+const fs = require("fs");
+const path = require("path");
+const dotenv = require("dotenv");
 const express = require("express");
 const mongoose = require("mongoose");
 const playlistRoutes = require("./routes/playlistRoutes");
+
+const envPathCandidates = [
+  path.join(__dirname, "config.env"),
+  path.join(__dirname, "views", "config.env"),
+];
+
+const envPath = envPathCandidates.find(function (candidate) {
+  return fs.existsSync(candidate);
+});
+
+if (envPath) {
+  dotenv.config({ path: envPath });
+} else {
+  dotenv.config();
+}
 
 const server = express();
 const hostname = "localhost";
@@ -25,7 +42,15 @@ server.use(function (req, res) {
 
 async function connectDB() {
   try {
-    await mongoose.connect(process.env.DB);
+    const dbUri = process.env.DB || process.env.MONGODB_URI;
+
+    if (!dbUri) {
+      throw new Error(
+        "Missing MongoDB connection string. Set DB or MONGODB_URI in config.env."
+      );
+    }
+
+    await mongoose.connect(dbUri);
     console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
