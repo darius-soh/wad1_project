@@ -1,69 +1,62 @@
-# Playlist App MVP
+# Mini Spotify Playlist Manager
 
-A beginner-friendly music playlist web app built with Node.js, Express, EJS, and file-based JSON storage.
+A simple playlist web app built with Node.js, Express.js, MongoDB, Mongoose, and EJS.
 
 ## Features
 
-- Register and log in with session-based authentication
 - View all playlists
-- Create playlists
-- Open a playlist page
-- Add songs to a playlist
-- Leave ratings and reviews on songs
-- Delete songs from playlists you created
-- Delete playlists you created
+- Add a playlist
+- Open one playlist and view its songs
+- Add a song to a playlist
+- Delete a song
+- Delete a playlist
 
 ## Tech Stack
 
 - Node.js
-- Express
+- Express.js
+- MongoDB
+- Mongoose
 - EJS
-- express-session
-- bcryptjs
-- uuid
-- fs/promises
 
 ## Project Structure
 
 ```text
 controllers/
-  authController.js
   playlistController.js
-data/
-  playlists.json
-  users.json
 models/
   playlistModel.js
-  userModel.js
+  songModel.js
 routes/
-  authRoutes.js
   playlistRoutes.js
-utils/
-  jsonStorage.js
 views/
-  auth/
-    login.ejs
-    register.ejs
-  partials/
-    footer.ejs
+  common/
     header.ejs
-  playlists/
-    create.ejs
-    index.ejs
-    show.ejs
-package.json
+  add-playlist.ejs
+  add-song.ejs
+  home.ejs
+  playlist-detail.ejs
+  playlist-list.ejs
 server.js
+package.json
 ```
+
+## Routes
+
+- `GET /` redirects to `/playlists`
+- `GET /playlists` shows all playlists
+- `GET /playlists/add` shows the add playlist form
+- `POST /playlists/add` saves a playlist
+- `GET /playlists/:id` shows one playlist and its songs
+- `POST /playlists/:id/delete` deletes a playlist
+- `GET /playlists/:id/songs/add` shows the add song form
+- `POST /playlists/:id/songs/add` saves a song
+- `POST /playlists/:id/songs/:songId/delete` deletes a song
 
 ## Setup
 
-1. Run `npm install`
-2. Run `node server.js`
-3. Open `http://localhost:3000`
-4. Register a new account and start testing the app
-
-## Notes
-
-- The app starts with one seeded demo playlist in `data/playlists.json`
-- User data and playlist data are stored in JSON files inside the `data/` folder
-- No CSS or frontend framework is used
+1. Make sure MongoDB is running.
+2. Install dependencies with `npm install`.
+3. Set `MONGODB_URI` if you do not want to use the default local database.
+4. Run `npm start`.
+5. Open `http://localhost:3000`.

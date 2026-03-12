@@ -4,25 +4,13 @@ const playlistController = require("../controllers/playlistController");
 
 const router = express.Router();
 
-router.use((req, res, next) => {
-  if (!req.session.user) {
-    req.session.flash = {
-      type: "error",
-      text: "Please log in to continue."
-    };
-    return res.redirect("/login");
-  }
-
-  return next();
-});
-
 router.get("/", playlistController.listPlaylists);
-router.get("/new", playlistController.showCreateForm);
-router.post("/", playlistController.createPlaylist);
-router.get("/:playlistId", playlistController.showPlaylist);
-router.post("/:playlistId/songs", playlistController.addSong);
-router.post("/:playlistId/songs/:songId/reviews", playlistController.addReview);
-router.post("/:playlistId/songs/:songId/delete", playlistController.deleteSong);
-router.post("/:playlistId/delete", playlistController.deletePlaylist);
+router.get("/add", playlistController.showAddPlaylistForm);
+router.post("/add", playlistController.createPlaylist);
+router.get("/:id", playlistController.showPlaylist);
+router.post("/:id/delete", playlistController.deletePlaylist);
+router.get("/:id/songs/add", playlistController.showAddSongForm);
+router.post("/:id/songs/add", playlistController.createSong);
+router.post("/:id/songs/:songId/delete", playlistController.deleteSong);
 
 module.exports = router;

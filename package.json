@@ -1,16 +1,14 @@
 {
   "name": "playlist-mvp",
   "version": "1.0.0",
-  "description": "Barebones music playlist MVP built with Node.js, Express, and EJS.",
+  "description": "Mini Spotify Playlist Manager built with Node.js, Express, MongoDB, and EJS.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
-    "express-session": "^1.18.1",
-    "uuid": "^9.0.1"
+    "mongoose": "^8.19.2"
   }
 }

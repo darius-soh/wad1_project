@@ -1,0 +1,54 @@
+<%- include("common/header", { title: title }) %>
+
+<% if (error) { %>
+  <p class="error"><%= error %></p>
+<% } %>
+
+<% if (!playlist) { %>
+  <p><a href="/playlists">Back to playlists</a></p>
+<% } %>
+
+<% if (playlist) { %>
+  <h2><%= playlist.name %></h2>
+  <p><strong>Description:</strong> <%= playlist.description %></p>
+  <p><strong>Genre:</strong> <%= playlist.genre %></p>
+  <p><strong>Created:</strong> <%= playlist.createdAt.toLocaleString() %></p>
+
+  <p><a href="/playlists/<%= playlist._id %>/songs/add">Add Song</a></p>
+
+  <form action="/playlists/<%= playlist._id %>/delete" method="POST">
+    <button type="submit">Delete Playlist</button>
+  </form>
+
+  <h3>Songs</h3>
+
+  <% if (!songs.length) { %>
+    <p>No songs added yet.</p>
+  <% } %>
+
+  <% for (var song of songs) { %>
+    <div class="card">
+      <h4><%= song.title %></h4>
+      <p><strong>Artist:</strong> <%= song.artist %></p>
+      <p><strong>Album:</strong> <%= song.album %></p>
+
+      <% if (song.rating) { %>
+        <p><strong>Rating:</strong> <%= song.rating %>/5</p>
+      <% } %>
+
+      <% if (song.review) { %>
+        <p><strong>Review:</strong> <%= song.review %></p>
+      <% } %>
+
+      <p><strong>Added:</strong> <%= song.createdAt.toLocaleString() %></p>
+
+      <form action="/playlists/<%= playlist._id %>/songs/<%= song._id %>/delete" method="POST">
+        <button type="submit">Delete Song</button>
+      </form>
+    </div>
+  <% } %>
+<% } %>
+
+</main>
+</body>
+</html>
