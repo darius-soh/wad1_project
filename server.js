@@ -35,7 +35,15 @@ server.use(function (req, res) {
 // Connect to MongoDB.
 async function connectDB() {
   try {
-    await mongoose.connect(process.env.DB);
+    const dbUri = process.env.DB || process.env.MONGODB_URI;
+
+    if (!dbUri) {
+      throw new Error(
+        "Missing MongoDB connection string. Set DB or MONGODB_URI in config.env."
+      );
+    }
+
+    await mongoose.connect(dbUri);
     console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
