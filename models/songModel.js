@@ -32,7 +32,7 @@ const songSchema = new mongoose.Schema({
   }
 });
 
-const Song = mongoose.models.Song || mongoose.model("Song", songSchema);
+const Song = mongoose.model("Song", songSchema);
 
 async function getSongsByPlaylistId(playlistId) {
   return await Song.find({ playlistId: playlistId });

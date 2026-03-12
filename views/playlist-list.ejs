@@ -12,7 +12,7 @@
   <p>No playlists found.</p>
 <% } %>
 
-<% for (var playlist of playlists) { %>
+<% for (const playlist of playlists) { %>
   <div class="card">
     <h3><a href="/playlists/<%= playlist._id %>"><%= playlist.name %></a></h3>
     <p><strong>Description:</strong> <%= playlist.description %></p>

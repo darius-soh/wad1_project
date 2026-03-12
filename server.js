@@ -1,40 +1,42 @@
+require("dotenv").config({ path: "./config.env" });
 const express = require("express");
 const mongoose = require("mongoose");
-
 const playlistRoutes = require("./routes/playlistRoutes");
 
-const app = express();
-const port = process.env.PORT || 3000;
-const mongoUri =
-  process.env.MONGODB_URI ||
-  "mongodb://127.0.0.1:27017/mini-spotify-playlist-manager";
+const server = express();
+const hostname = "localhost";
+const port = 8000;
 
-app.set("view engine", "ejs");
-app.set("views", __dirname + "/views");
+server.set("view engine", "ejs");
+server.set("views", __dirname + "/views");
 
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+server.use(express.urlencoded({ extended: false }));
+server.use(express.json());
 
-app.get("/", function (req, res) {
+server.get("/", function (req, res) {
   return res.redirect("/playlists");
 });
 
-app.use("/playlists", playlistRoutes);
+server.use("/playlists", playlistRoutes);
 
-app.use(function (req, res) {
+server.use(function (req, res) {
   return res.redirect("/playlists");
 });
 
-async function startServer() {
+async function connectDB() {
   try {
-    await mongoose.connect(mongoUri);
-
-    app.listen(port, function () {
-      console.log("Server running at http://localhost:" + port);
-    });
+    await mongoose.connect(process.env.DB);
+    console.log("MongoDB connected successfully");
   } catch (error) {
-    console.log("Something went wrong.");
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1);
   }
 }
 
-startServer();
+function startServer() {
+  server.listen(port, hostname, function () {
+    console.log("Server running at http://" + hostname + ":" + port + "/");
+  });
+}
+
+connectDB().then(startServer);
