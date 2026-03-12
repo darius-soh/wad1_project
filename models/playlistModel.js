@@ -19,8 +19,7 @@ const playlistSchema = new mongoose.Schema({
   }
 });
 
-const Playlist =
-  mongoose.models.Playlist || mongoose.model("Playlist", playlistSchema);
+const Playlist = mongoose.model("Playlist", playlistSchema);
 
 async function getAllPlaylists() {
   return await Playlist.find();

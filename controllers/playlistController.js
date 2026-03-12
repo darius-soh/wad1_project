@@ -19,28 +19,16 @@ async function listPlaylists(req, res) {
   }
 }
 
-async function showAddPlaylistForm(req, res) {
-  try {
-    return res.render("add-playlist", {
-      title: "Add Playlist",
-      error: "",
-      formData: {
-        name: "",
-        description: "",
-        genre: ""
-      }
-    });
-  } catch (error) {
-    return res.render("add-playlist", {
-      title: "Add Playlist",
-      error: "Something went wrong.",
-      formData: {
-        name: "",
-        description: "",
-        genre: ""
-      }
-    });
-  }
+function showAddPlaylistForm(req, res) {
+  return res.render("add-playlist", {
+    title: "Add Playlist",
+    error: "",
+    formData: {
+      name: "",
+      description: "",
+      genre: ""
+    }
+  });
 }
 
 async function createPlaylist(req, res) {
@@ -316,17 +304,11 @@ async function deleteSong(req, res) {
       });
     }
 
-    songs = await songModel.getSongsByPlaylistId(req.params.id);
+    const song = await songModel.getSongById(req.params.songId);
 
-    let song = null;
+    if (!song || String(song.playlistId) !== req.params.id) {
+      songs = await songModel.getSongsByPlaylistId(req.params.id);
 
-    for (const currentSong of songs) {
-      if (String(currentSong._id) === req.params.songId) {
-        song = currentSong;
-      }
-    }
-
-    if (!song) {
       return res.render("playlist-detail", {
         title: playlist.name,
         playlist: playlist,
