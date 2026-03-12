@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title ? `${title} | Playlist App` : "Playlist App" %></title>
+  </head>
+  <body>
+    <header>
+      <h1><a href="<%= currentUser ? '/playlists' : '/' %>">Playlist App</a></h1>
+      <nav aria-label="Main navigation">
+        <ul>
+          <% if (currentUser) { %>
+            <li><a href="/playlists">All Playlists</a></li>
+            <li><a href="/playlists/new">Create Playlist</a></li>
+            <li>
+              <form action="/logout" method="POST">
+                <button type="submit">Logout (<%= currentUser.username %>)</button>
+              </form>
+            </li>
+          <% } else { %>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/register">Register</a></li>
+          <% } %>
+        </ul>
+      </nav>
+      <hr>
+    </header>
+
+    <main>
+      <% if (flash) { %>
+        <section>
+          <% if (flash.type === "error") { %>
+            <p><strong>Error:</strong> <%= flash.text %></p>
+          <% } else { %>
+            <p><strong>Success:</strong> <%= flash.text %></p>
+          <% } %>
+        </section>
+      <% } %>

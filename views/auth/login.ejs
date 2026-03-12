@@ -1,0 +1,35 @@
+<%- include("../partials/header") %>
+
+<section>
+  <h2>Login</h2>
+
+  <% if (error) { %>
+    <p><strong>Error:</strong> <%= error %></p>
+  <% } %>
+
+  <form action="/login" method="POST">
+    <p>
+      <label for="username">Username</label><br>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        value="<%= formData.username %>"
+        required
+      >
+    </p>
+
+    <p>
+      <label for="password">Password</label><br>
+      <input id="password" name="password" type="password" required>
+    </p>
+
+    <p>
+      <button type="submit">Login</button>
+    </p>
+  </form>
+
+  <p>Need an account? <a href="/register">Register here</a>.</p>
+</section>
+
+<%- include("../partials/footer") %>

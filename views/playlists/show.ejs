@@ -1,0 +1,138 @@
+<%- include("../partials/header") %>
+
+<section>
+  <h2><%= playlist.name %></h2>
+  <p><strong>Description:</strong> <%= playlist.description %></p>
+  <p><strong>Genre:</strong> <%= playlist.genre %></p>
+  <p><strong>Creator:</strong> <%= playlist.createdByUsername %></p>
+  <p><strong>Playlist Average Rating:</strong> <%= playlist.averageRatingText %></p>
+
+  <% if (isCreator) { %>
+    <form action="/playlists/<%= playlist.id %>/delete" method="POST">
+      <button type="submit">Delete Playlist</button>
+    </form>
+  <% } else { %>
+    <p>Only the playlist creator can delete this playlist or remove songs from it.</p>
+  <% } %>
+
+  <p><a href="/playlists">Back to all playlists</a></p>
+</section>
+
+<hr>
+
+<section>
+  <h3>Add a Song</h3>
+  <form action="/playlists/<%= playlist.id %>/songs" method="POST">
+    <p>
+      <label for="title">Title</label><br>
+      <input id="title" name="title" type="text" required>
+    </p>
+
+    <p>
+      <label for="artist">Artist</label><br>
+      <input id="artist" name="artist" type="text" required>
+    </p>
+
+    <p>
+      <label for="album">Album</label><br>
+      <input id="album" name="album" type="text" required>
+    </p>
+
+    <p>
+      <label for="imageUrl">Image URL (optional)</label><br>
+      <input id="imageUrl" name="imageUrl" type="url">
+    </p>
+
+    <p>
+      <button type="submit">Add Song</button>
+    </p>
+  </form>
+</section>
+
+<hr>
+
+<section>
+  <h3>Songs</h3>
+
+  <% if (!playlist.songs.length) { %>
+    <p>This playlist does not have any songs yet.</p>
+  <% } else { %>
+    <% playlist.songs.forEach((song) => { %>
+      <article>
+        <h4><%= song.title %> by <%= song.artist %></h4>
+        <p><strong>Album:</strong> <%= song.album %></p>
+        <p><strong>Average Rating:</strong> <%= song.averageRatingText %></p>
+
+        <% if (song.imageUrl) { %>
+          <p>
+            <img
+              src="<%= song.imageUrl %>"
+              alt="Album cover for <%= song.title %>"
+              width="140"
+            >
+          </p>
+        <% } %>
+
+        <% if (isCreator) { %>
+          <form action="/playlists/<%= playlist.id %>/songs/<%= song.id %>/delete" method="POST">
+            <button type="submit">Delete Song</button>
+          </form>
+        <% } %>
+
+        <section>
+          <h5>Reviews</h5>
+
+          <% if (!song.reviews.length) { %>
+            <p>No reviews yet.</p>
+          <% } else { %>
+            <ul>
+              <% song.reviews.forEach((review) => { %>
+                <li>
+                  <p><strong><%= review.username %></strong> rated this song <%= review.rating %>/5</p>
+                  <p><%= review.reviewText %></p>
+                  <p><small><%= review.createdAtText %></small></p>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </section>
+
+        <section>
+          <h5>Leave a Rating and Review</h5>
+          <form action="/playlists/<%= playlist.id %>/songs/<%= song.id %>/reviews" method="POST">
+            <p>
+              <label for="rating-<%= song.id %>">Rating</label><br>
+              <select id="rating-<%= song.id %>" name="rating" required>
+                <option value="">Select a rating</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </p>
+
+            <p>
+              <label for="reviewText-<%= song.id %>">Review</label><br>
+              <textarea
+                id="reviewText-<%= song.id %>"
+                name="reviewText"
+                rows="3"
+                cols="40"
+                required
+              ></textarea>
+            </p>
+
+            <p>
+              <button type="submit">Submit Review</button>
+            </p>
+          </form>
+        </section>
+
+        <hr>
+      </article>
+    <% }) %>
+  <% } %>
+</section>
+
+<%- include("../partials/footer") %>
