@@ -1,13 +1,16 @@
 <%- include("common/header", { title: title }) %>
 
+<!-- Error message -->
 <% if (error) { %>
   <p class="error"><%= error %></p>
 <% } %>
 
+<!-- Back link if playlist is missing -->
 <% if (!playlist) { %>
   <p><a href="/playlists">Back to playlists</a></p>
 <% } %>
 
+<!-- Playlist details -->
 <% if (playlist) { %>
   <h2><%= playlist.name %></h2>
   <p><strong>Description:</strong> <%= playlist.description %></p>
@@ -22,10 +25,12 @@
 
   <h3>Songs</h3>
 
+  <!-- Message when there are no songs -->
   <% if (!songs.length) { %>
     <p>No songs added yet.</p>
   <% } %>
 
+  <!-- Song cards -->
   <% for (const song of songs) { %>
     <div class="card">
       <h4><%= song.title %></h4>

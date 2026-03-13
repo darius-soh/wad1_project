@@ -1,17 +1,22 @@
 <%- include("common/header", { title: title }) %>
 
+<!-- Page heading -->
 <h2>All Playlists</h2>
 
+<!-- Error message -->
 <% if (error) { %>
   <p class="error"><%= error %></p>
 <% } %>
 
+<!-- Link to add a new playlist -->
 <p><a href="/playlists/add">Create a new playlist</a></p>
 
-<% if (!playlists.length) { %>
+<!-- Message when there are no playlists -->
+<% if (playlists.length === 0) { %>
   <p>No playlists found.</p>
 <% } %>
 
+<!-- Playlist cards -->
 <% for (const playlist of playlists) { %>
   <div class="card">
     <h3><a href="/playlists/<%= playlist._id %>"><%= playlist.name %></a></h3>

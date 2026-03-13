@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Define the structure of a song document.
 const songSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -32,22 +33,27 @@ const songSchema = new mongoose.Schema({
   }
 });
 
+// Create the Song model from the schema.
 const Song = mongoose.model("Song", songSchema);
 
-async function getSongsByPlaylistId(playlistId) {
-  return await Song.find({ playlistId: playlistId });
+// Return all songs belonging to a specific playlist.
+function getSongsByPlaylistId(playlistId) {
+  return Song.find({ playlistId: playlistId });
 }
 
-async function getSongById(id) {
-  return await Song.findById(id);
+// Return a single song by its MongoDB ID.
+function getSongById(id) {
+  return Song.findById(id);
 }
 
-async function createSong(data) {
-  return await Song.create(data);
+// Insert a new song document.
+function createSong(data) {
+  return Song.create(data);
 }
 
-async function deleteSongById(id) {
-  return await Song.findByIdAndDelete(id);
+// Delete a song by its MongoDB ID.
+function deleteSongById(id) {
+  return Song.findByIdAndDelete(id);
 }
 
 module.exports = {
