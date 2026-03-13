@@ -1,0 +1,34 @@
+<%- include("common/header", { title: title }) %>
+
+<!-- Page heading -->
+<h2>All Playlists</h2>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p class="error"><%= error %></p>
+<% } %>
+
+<!-- Link to add a new playlist -->
+<p><a href="/playlists/add">Create a new playlist</a></p>
+
+<!-- Message when there are no playlists -->
+<% if (playlists.length === 0) { %>
+  <p>No playlists found.</p>
+<% } %>
+
+<!-- Playlist cards -->
+<% for (const playlist of playlists) { %>
+  <div class="card">
+    <h3><a href="/playlists/<%= playlist._id %>"><%= playlist.name %></a></h3>
+    <p><strong>Description:</strong> <%= playlist.description %></p>
+    <p><strong>Genre:</strong> <%= playlist.genre %></p>
+    <p><strong>Created:</strong> <%= playlist.createdAt.toLocaleString() %></p>
+    <form action="/playlists/<%= playlist._id %>/delete" method="POST">
+      <button type="submit">Delete Playlist</button>
+    </form>
+  </div>
+<% } %>
+
+</main>
+</body>
+</html>

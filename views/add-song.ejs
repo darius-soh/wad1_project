@@ -1,0 +1,42 @@
+<%- include("common/header", { title: title }) %>
+
+<!-- Page heading -->
+<h2>Add Song</h2>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p class="error"><%= error %></p>
+<% } %>
+
+<!-- Back link if playlist is missing -->
+<% if (!playlist) { %>
+  <p><a href="/playlists">Back to playlists</a></p>
+<% } %>
+
+<!-- Add song form -->
+<% if (playlist) { %>
+  <p><strong>Playlist:</strong> <%= playlist.name %></p>
+
+  <form action="/playlists/<%= playlist._id %>/songs/add" method="POST">
+    <label for="title">Song Title</label>
+    <input id="title" name="title" type="text" value="<%= formData.title %>">
+
+    <label for="artist">Artist</label>
+    <input id="artist" name="artist" type="text" value="<%= formData.artist %>">
+
+    <label for="album">Album</label>
+    <input id="album" name="album" type="text" value="<%= formData.album %>">
+
+    <label for="rating">Rating (1 to 5)</label>
+    <input id="rating" name="rating" type="number" min="1" max="5" value="<%= formData.rating %>">
+
+    <label for="review">Review</label>
+    <textarea id="review" name="review" rows="4"><%= formData.review %></textarea>
+
+    <button type="submit">Save Song</button>
+  </form>
+<% } %>
+
+</main>
+</body>
+</html>

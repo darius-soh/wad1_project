@@ -1,0 +1,27 @@
+<%- include("common/header", { title: title }) %>
+
+<!-- Page heading -->
+<h2>Add Playlist</h2>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p class="error"><%= error %></p>
+<% } %>
+
+<!-- Add playlist form -->
+<form action="/playlists/add" method="POST">
+  <label for="name">Playlist Name</label>
+  <input id="name" name="name" type="text" value="<%= formData.name %>">
+
+  <label for="description">Description</label>
+  <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
+
+  <label for="genre">Genre</label>
+  <input id="genre" name="genre" type="text" value="<%= formData.genre %>">
+
+  <button type="submit">Save Playlist</button>
+</form>
+
+</main>
+</body>
+</html>
