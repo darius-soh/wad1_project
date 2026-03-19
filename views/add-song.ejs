@@ -17,7 +17,9 @@
 <% if (playlist) { %>
   <p><strong>Playlist:</strong> <%= playlist.name %></p>
 
-  <form action="/playlists/<%= playlist._id %>/songs/add" method="POST">
+  <form action="/playlists/songs/add" method="POST">
+    <input type="hidden" name="playlistId" value="<%= playlist._id %>">
+
     <label for="title">Song Title</label>
     <input id="title" name="title" type="text" value="<%= formData.title %>">
 

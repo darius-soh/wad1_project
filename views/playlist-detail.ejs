@@ -17,9 +17,10 @@
   <p><strong>Genre:</strong> <%= playlist.genre %></p>
   <p><strong>Created:</strong> <%= playlist.createdAt.toLocaleString() %></p>
 
-  <p><a href="/playlists/<%= playlist._id %>/songs/add">Add Song</a></p>
+  <p><a href="/playlists/songs/add?id=<%= playlist._id %>">Add Song</a></p>
 
-  <form action="/playlists/<%= playlist._id %>/delete" method="POST">
+  <form action="/playlists/delete" method="POST">
+    <input type="hidden" name="playlistId" value="<%= playlist._id %>">
     <button type="submit">Delete Playlist</button>
   </form>
 
@@ -32,8 +33,7 @@
 
   <!-- Song cards -->
   <% for (const song of songs) { %>
-    <div class="card">
-      <h4><%= song.title %></h4>
+      <h3><%= song.title %></h3>
       <p><strong>Artist:</strong> <%= song.artist %></p>
       <p><strong>Album:</strong> <%= song.album %></p>
 
@@ -45,12 +45,14 @@
         <p><strong>Review:</strong> <%= song.review %></p>
       <% } %>
 
+      <!-- toLocaleString has been explained earlier, it is to make the Date readable -->
       <p><strong>Added:</strong> <%= song.createdAt.toLocaleString() %></p>
 
-      <form action="/playlists/<%= playlist._id %>/songs/<%= song._id %>/delete" method="POST">
+      <form action="/playlists/songs/delete" method="POST">
+        <input type="hidden" name="playlistId" value="<%= playlist._id %>">
+        <input type="hidden" name="songId" value="<%= song._id %>">
         <button type="submit">Delete Song</button>
       </form>
-    </div>
   <% } %>
 <% } %>
 

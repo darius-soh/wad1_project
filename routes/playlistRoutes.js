@@ -14,25 +14,20 @@ router.get("/add", playlistController.showAddPlaylistForm);
 // Save a new playlist.
 router.post("/add", playlistController.createPlaylist);
 
-// Show one playlist and its songs.
-// :id is the MongoDB-generated ID of the playlist, passed through the URL.
-router.get("/:id", playlistController.showPlaylist);
+// Show one playlist and its songs using req.query.id.
+router.get("/view", playlistController.showPlaylist);
 
-// Delete one playlist and all its songs.
-// :id tells the server which playlist to delete.
-router.post("/:id/delete", playlistController.deletePlaylist);
+// Delete one playlist and all its songs using req.body.playlistId.
+router.post("/delete", playlistController.deletePlaylist);
 
-// Show the add song form for a specific playlist.
-// :id tells the server which playlist the song will be added to.
-router.get("/:id/songs/add", playlistController.showAddSongForm);
+// Show the add song form using req.query.id.
+router.get("/songs/add", playlistController.showAddSongForm);
 
-// Save a new song to a specific playlist.
-// :id links the new song to the correct playlist in MongoDB.
-router.post("/:id/songs/add", playlistController.createSong);
+// Save a new song using req.body.playlistId.
+router.post("/songs/add", playlistController.createSong);
 
-// Delete one song from a specific playlist.
-// :id identifies the playlist and :songId identifies the song to delete.
-router.post("/:id/songs/:songId/delete", playlistController.deleteSong);
+// Delete one song using req.body.playlistId and req.body.songId.
+router.post("/songs/delete", playlistController.deleteSong);
 
 // Export the router so server.js can use it.
 module.exports = router;

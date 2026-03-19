@@ -23,6 +23,13 @@ const songSchema = new mongoose.Schema({
     type: String
   },
   playlistId: {
+// type: mongoose.Schema.Types.ObjectId
+// This means the value must be a MongoDB ObjectId, not a normal string or number.
+// MongoDB automatically gives every document an _id, and that _id is usually an ObjectId.
+
+// ref: "Playlist"
+// This tells Mongoose that this ObjectId points to the Playlist model.
+// In other words, playlistId should contain the _id of a playlist document.
     type: mongoose.Schema.Types.ObjectId,
     ref: "Playlist",
     required: true

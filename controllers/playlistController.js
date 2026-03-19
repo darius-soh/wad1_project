@@ -17,7 +17,9 @@ async function listPlaylists(req, res) {
     console.error(error);
     return res.render("playlist-list", {
       title: "All Playlists",
+      // If there is an error in the playlists, send an empty array
       playlists: [],
+      // error message will be "Something went wrong"
       error: "Something went wrong."
     });
   }
@@ -46,11 +48,11 @@ async function createPlaylist(req, res) {
 
   try {
     // Stop and show the form again if any required field is missing.
-    //  In JavaScript, "" (empty string) is actually falsy, meaning it behaves like false in an if check.
     if (!name || !description || !genre) {
       return res.render("add-playlist", {
         title: "Add Playlist",
         error: "All fields are required.",
+        // Template for the formData
         formData: {
           name: name,
           description: description,
@@ -59,17 +61,15 @@ async function createPlaylist(req, res) {
       });
     }
 
-    // Save the new playlist in MongoDB.
+    // Save the new playlist in MongoDB if we reach this stage then it will be able to add to creating the platlist
     const playlist = await playlistModel.createPlaylist({
       name: name,
       description: description,
       genre: genre
     });
 
-    // Open the new playlist page after saving.
-    // _id is the unique identifier that MongoDB automatically creates for every document when it is saved
-    // When you create a playlist, MongoDB generates it for you - so we can just use it as the object identifier 
-    return res.redirect("/playlists/" + playlist._id);
+    // Open the new playlist page after saving, this follows a get request which we will extract later on
+    return res.redirect("/playlists/view?id=" + playlist._id);
   } catch (error) {
     console.error(error);
     return res.render("add-playlist", {
@@ -86,16 +86,26 @@ async function createPlaylist(req, res) {
 
 // Show one playlist with its songs.
 async function showPlaylist(req, res) {
+  const playlistId = (req.query.id || "").trim();
+
   try {
-    // Find the playlist using the ID from the route.
-    // req.params.id reads the :id value from the URL.
-    // For example: GET /playlists/64f3a9c2b1e4a23d88f0c1a7 - req.params.id === "64f3a9c2b1e4a23d88f0c1a7"
-    const playlist = await playlistModel.getPlaylistById(req.params.id);
+    // Make sure an ID was passed through the query string.
+    if (!playlistId) {
+      return res.render("playlist-detail", {
+        title: "Playlist Details",
+        playlist: null,
+        songs: [],
+        error: "Playlist not found."
+      });
+    }
+
+    // Find the playlist using the ID from the URL query.
+    const playlist = await playlistModel.getPlaylistById(playlistId);
     let songs = [];
 
     // Only load songs if the playlist exists.
     if (playlist) {
-      songs = await songModel.getSongsByPlaylistId(req.params.id);
+      songs = await songModel.getSongsByPlaylistId(playlistId);
     }
 
     // Show a message if the playlist cannot be found.
@@ -128,9 +138,27 @@ async function showPlaylist(req, res) {
 
 // Show the add song page.
 async function showAddSongForm(req, res) {
+  const playlistId = (req.query.id || "").trim();
+
   try {
+    // Make sure an ID was passed through the query string.
+    if (!playlistId) {
+      return res.render("add-song", {
+        title: "Add Song",
+        playlist: null,
+        error: "Playlist not found.",
+        formData: {
+          title: "",
+          artist: "",
+          album: "",
+          rating: "",
+          review: ""
+        }
+      });
+    }
+
     // Find the playlist first so the form knows where to add the song.
-    const playlist = await playlistModel.getPlaylistById(req.params.id);
+    const playlist = await playlistModel.getPlaylistById(playlistId);
 
     // Show an error if the playlist does not exist.
     if (!playlist) {
@@ -182,6 +210,7 @@ async function showAddSongForm(req, res) {
 // Save a new song.
 async function createSong(req, res) {
   // Read the form values and remove extra spaces.
+  const playlistId = (req.body.playlistId || "").trim();
   const title = (req.body.title || "").trim();
   const artist = (req.body.artist || "").trim();
   const album = (req.body.album || "").trim();
@@ -192,7 +221,22 @@ async function createSong(req, res) {
 
   try {
     // Make sure the playlist exists before adding a song to it.
-    playlist = await playlistModel.getPlaylistById(req.params.id);
+    if (!playlistId) {
+      return res.render("add-song", {
+        title: "Add Song",
+        playlist: null,
+        error: "Playlist not found.",
+        formData: {
+          title: title,
+          artist: artist,
+          album: album,
+          rating: rating,
+          review: review
+        }
+      });
+    }
+
+    playlist = await playlistModel.getPlaylistById(playlistId);
 
     if (!playlist) {
       return res.render("add-song", {
@@ -245,12 +289,12 @@ async function createSong(req, res) {
       }
     }
 
-    // Build the song data that will be saved.
+    // Placeholder to build the song data that will be saved.
     const songData = {
       title: title,
       artist: artist,
       album: album,
-      playlistId: req.params.id
+      playlistId: playlistId
     };
 
     // Only save rating if the user entered a rating.
@@ -266,8 +310,8 @@ async function createSong(req, res) {
     // Save the song in MongoDB.
     await songModel.createSong(songData);
 
-    // Go back to the playlist page after saving.
-    return res.redirect("/playlists/" + req.params.id);
+    // Go back to the playlist page after saving, making it in the URL which can then be retrieve later on
+    return res.redirect("/playlists/view?id=" + playlistId);
   } catch (error) {
     console.error(error);
     return res.render("add-song", {
@@ -287,9 +331,21 @@ async function createSong(req, res) {
 
 // Delete one playlist and its songs.
 async function deletePlaylist(req, res) {
+  const playlistId = (req.body.playlistId || "").trim();
+
   try {
     // Check whether the playlist exists first.
-    const playlist = await playlistModel.getPlaylistById(req.params.id);
+    if (!playlistId) {
+      const playlists = await playlistModel.getAllPlaylists();
+
+      return res.render("playlist-list", {
+        title: "All Playlists",
+        playlists: playlists,
+        error: "Playlist not found."
+      });
+    }
+
+    const playlist = await playlistModel.getPlaylistById(playlistId);
 
     // If not found, return to the list page with an error.
     if (!playlist) {
@@ -303,15 +359,16 @@ async function deletePlaylist(req, res) {
     }
 
     // Load all songs that belong to this playlist.
-    const songs = await songModel.getSongsByPlaylistId(req.params.id);
+    const songs = await songModel.getSongsByPlaylistId(playlistId);
 
-    // Delete each song before deleting the playlist itself.
+    // Delete each song before deleting the playlist itself, the user will not see this
+    // This will be done on the backend
     for (const song of songs) {
       await songModel.deleteSongById(song._id);
     }
 
     // Delete the playlist after its songs are removed.
-    await playlistModel.deletePlaylistById(req.params.id);
+    await playlistModel.deletePlaylistById(playlistId);
 
     // Return to the playlist list page.
     return res.redirect("/playlists");
@@ -327,12 +384,23 @@ async function deletePlaylist(req, res) {
 
 // Delete one song from a playlist.
 async function deleteSong(req, res) {
+  const playlistId = (req.body.playlistId || "").trim();
+  const songId = (req.body.songId || "").trim();
   let playlist = null;
   let songs = [];
 
   try {
     // Check whether the parent playlist exists.
-    playlist = await playlistModel.getPlaylistById(req.params.id);
+    if (!playlistId || !songId) {
+      return res.render("playlist-detail", {
+        title: "Playlist Details",
+        playlist: null,
+        songs: [],
+        error: "Song not found."
+      });
+    }
+
+    playlist = await playlistModel.getPlaylistById(playlistId);
 
     if (!playlist) {
       return res.render("playlist-detail", {
@@ -344,14 +412,11 @@ async function deleteSong(req, res) {
     }
 
     // Load the song directly using its ID.
-    // The name songId is whatever we wrote after the : in the route 
-    // This is to match between the controller and the route 
-    const song = await songModel.getSongById(req.params.songId);
+    const song = await songModel.getSongById(songId);
 
     // Make sure the song exists and belongs to this playlist.
-    // If either is not met, then the song is not found
-    if (!song || String(song.playlistId) !== req.params.id) {
-      songs = await songModel.getSongsByPlaylistId(req.params.id);
+    if (!song || String(song.playlistId) !== playlistId) {
+      songs = await songModel.getSongsByPlaylistId(playlistId);
 
       return res.render("playlist-detail", {
         title: playlist.name,
@@ -362,10 +427,10 @@ async function deleteSong(req, res) {
     }
 
     // Delete the selected song.
-    await songModel.deleteSongById(req.params.songId);
+    await songModel.deleteSongById(songId);
 
     // Return to the playlist details page.
-    return res.redirect("/playlists/" + req.params.id);
+    return res.redirect("/playlists/view?id=" + playlistId);
   } catch (error) {
     console.error(error);
     return res.render("playlist-detail", {

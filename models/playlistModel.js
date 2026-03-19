@@ -27,7 +27,8 @@ const Playlist = mongoose.model("Playlist", playlistSchema);
 
 // Return all playlist documents 
 // The find() method in Mongoose is used to query documents from a collection. 
-// It returns a Mongoose Query object, which supports chaining additional operations like sorting, limiting, and filtering.
+// It returns a Mongoose Query object, which 
+// supports chaining additional operations like sorting, limiting, and filtering.
 function getAllPlaylists() {
     return Playlist.find(); 
 }
