@@ -20,6 +20,12 @@ router.get("/view", playlistController.showPlaylist);
 // Delete one playlist and all its songs using req.body.playlistId.
 router.post("/delete", playlistController.deletePlaylist);
 
+// Show the edit playlist page
+router.get("/edit", playlistController.showEditPlaylist);
+
+// Process new playlist details
+router.post("/edit", playlistController.editPlaylist);
+
 // Show the add song form using req.query.id.
 router.get("/songs/add", playlistController.showAddSongForm);
 

@@ -19,9 +19,19 @@
 
   <p><a href="/playlists/songs/add?id=<%= playlist._id %>">Add Song</a></p>
 
-  <form action="/playlists/delete" method="POST">
+
+  <!-- Show delete and edit buttons for this playlist -->
+  <!-- inline-form keeps both forms on the same line -->
+  <form action="/playlists/delete" method="POST" class="inline-form">
+    <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
+    <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
     <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-    <button type="submit">Delete Playlist</button>
+    <button type="submit" class="action-button">Delete Playlist</button>
+  </form>
+
+  <form action="/playlists/edit" method="GET" class="inline-form">
+    <input type="hidden" name="playlistId" value="<%= playlist._id %>">
+    <button type="submit" class="action-button">Edit Playlist</button>
   </form>
 
   <h3>Songs</h3>

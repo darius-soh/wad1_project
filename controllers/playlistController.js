@@ -335,6 +335,178 @@ async function createSong(req, res) {
   }
 }
 
+// Turn a date into a string that works with datetime-local input fields
+function formatDateTimeLocal(date) {
+  const d = new Date(date);
+
+  // Add a leading zero to any number that is only one digit long
+  function pad(num) {
+    return String(num).padStart(2, "0");
+  }
+
+  // Return the date and time as YYYY-MM-DDTHH:MM:SS so the input field can read it
+  return d.getFullYear() + "-" +
+    pad(d.getMonth() + 1) + "-" +
+    pad(d.getDate()) + "T" +
+    pad(d.getHours()) + ":" +
+    pad(d.getMinutes()) + ":" +
+    pad(d.getSeconds());
+}
+
+// Show the edit playlist page with the current playlist details already filled in
+async function showEditPlaylist(req, res) {
+  const playlistId = (req.query.playlistId || "").trim();
+
+  try {
+    // Show an error if no playlist ID was given in the URL
+    if (!playlistId) {
+      return res.render("edit-playlist", {
+        title: "Edit Playlist",
+        error: "Playlist not found.",
+        genres: genres,
+        formData: {
+          playlistId: "",
+          name: "",
+          description: "",
+          genre: "",
+          createdAt: ""
+        }
+      });
+    }
+
+    // Look up the playlist using the ID from the URL
+    const playlist = await playlistModel.getPlaylistById(playlistId);
+
+    // Show an error if the playlist does not exist in the database
+    if (!playlist) {
+      return res.render("edit-playlist", {
+        title: "Edit Playlist",
+        error: "Playlist not found.",
+        genres: genres,
+        formData: {
+          playlistId: "",
+          name: "",
+          description: "",
+          genre: "",
+          createdAt: ""
+        }
+      });
+    }
+
+    // Open the edit form with the playlist's existing values pre-filled
+    return res.render("edit-playlist", {
+      title: "Edit Playlist",
+      error: "",
+      genres: genres,
+      formData: {
+        playlistId: playlist._id,
+        name: playlist.name,
+        description: playlist.description,
+        genre: playlist.genre,
+        // Format the date so the datetime-local input field can display it correctly
+        createdAt: formatDateTimeLocal(playlist.createdAt)
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.render("edit-playlist", {
+      title: "Edit Playlist",
+      error: "Something went wrong.",
+      genres: genres,
+      formData: {
+        playlistId: "",
+        name: "",
+        description: "",
+        genre: "",
+        createdAt: ""
+      }
+    });
+  }
+}
+
+// Save the changes made to an existing playlist.
+async function editPlaylist(req, res) {
+  // Read the updated values from the form and remove extra spaces
+  const playlistId = (req.body.playlistId || "").trim();
+  const name = (req.body.name || "").trim();
+  const description = (req.body.description || "").trim();
+  const genre = (req.body.genre || "").trim();
+  const createdAt = (req.body.createdAt || "").trim();
+
+   // Bundle the form values together so they can be sent back easily if there is an error
+  const formData = {
+    playlistId: playlistId,
+    name: name,
+    description: description,
+    genre: genre,
+    createdAt: createdAt
+  };
+
+  try {
+    if (!playlistId) {
+      // Show an error if no playlist ID was included in the form
+      return res.render("edit-playlist", {
+        title: "Edit Playlist",
+        error: "Playlist not found.",
+        genres: genres,
+        formData: formData
+      });
+    }
+
+    // Stop and show the form again if any required field is missing
+    if (!name || !description || !genre || !createdAt) {
+      return res.render("edit-playlist", {
+        title: "Edit Playlist",
+        error: "All fields are required.",
+        genres: genres,
+        formData: formData
+      });
+    }
+
+    // Convert the date string from the form into a proper Date object
+    const createdDate = new Date(createdAt);
+
+    // Show an error if the date string could not be turned into a valid date
+    if (Number.isNaN(createdDate.getTime())) {
+      return res.render("edit-playlist", {
+        title: "Edit Playlist",
+        error: "Created date is invalid.",
+        genres: genres,
+        formData: formData
+      });
+    }
+
+    // Save the updated playlist details to the database
+    const updatedPlaylist = await playlistModel.updatePlaylistById(playlistId, {
+      name: name,
+      description: description,
+      genre: genre,
+      createdAt: createdDate
+    });
+
+    // Show an error if the playlist could not be found during the update
+    if (!updatedPlaylist) {
+      return res.render("edit-playlist", {
+        title: "Edit Playlist",
+        error: "Playlist not found.",
+        genres: genres,
+        formData: formData
+      });
+    }
+
+    // Go back to the playlist page once the changes have been saved
+    return res.redirect("/playlists/view?id=" + playlistId);
+  } catch (error) {
+    console.error(error);
+    return res.render("edit-playlist", {
+      title: "Edit Playlist",
+      error: "Something went wrong.",
+      genres: genres,
+      formData: formData
+    });
+  }
+}
+
 // Delete one playlist and its songs.
 async function deletePlaylist(req, res) {
   const playlistId = (req.body.playlistId || "").trim();
@@ -456,5 +628,7 @@ module.exports = {
   showAddSongForm: showAddSongForm,
   createSong: createSong,
   deletePlaylist: deletePlaylist,
-  deleteSong: deleteSong
+  deleteSong: deleteSong,
+  showEditPlaylist: showEditPlaylist,
+  editPlaylist: editPlaylist
 };

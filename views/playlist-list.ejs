@@ -21,18 +21,26 @@
 <!-- Getting the playlists from listPlaylists in controller -->
  <!-- First, we display -->
 <% for (const playlist of playlists) { %>
-    <h3><a href="/playlists/view?id=<%= playlist._id %>"><%= playlist.name %></a></h3>
+    <h3><strong>Name:</strong> <a href="/playlists/view?id=<%= playlist._id %>"><%= playlist.name %></a></h3>
     <p><strong>Description:</strong> <%= playlist.description %></p>
     <p><strong>Genre:</strong> <%= playlist.genre %></p>
 <!-- toLocalString() converts the raw date into a human-readable format based on local settings -->
     <p><strong>Created:</strong> <%= playlist.createdAt.toLocaleString() %></p>
   
-    <form action="/playlists/delete" method="POST">
-<!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
-<!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
+
+    <!-- inline-form keeps both forms on the same line -->
+    <form action="/playlists/delete" method="POST" class="inline-form">
+      <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
+      <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
       <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-      <button type="submit">Delete Playlist</button>
+      <button type="submit" class="action-button">Delete Playlist</button>
     </form>
+
+    <form action="/playlists/edit" method="GET" class="inline-form">
+      <input type="hidden" name="playlistId" value="<%= playlist._id %>">
+      <button type="submit" class="action-button">Edit Playlist</button>
+    </form>
+
 <% } %>
 
 </main>

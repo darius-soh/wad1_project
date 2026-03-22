@@ -52,9 +52,15 @@ function deletePlaylistById(id) {
     return Playlist.findByIdAndDelete(id); 
 }
 
+// Edit a playlist by its MongoDB ID
+function updatePlaylistById(id, data) {
+    return Playlist.findByIdAndUpdate(id, data)
+}
+
 module.exports = {
   getAllPlaylists: getAllPlaylists,
   getPlaylistById: getPlaylistById,
   createPlaylist: createPlaylist,
-  deletePlaylistById: deletePlaylistById
+  deletePlaylistById: deletePlaylistById,
+  updatePlaylistById: updatePlaylistById
 };

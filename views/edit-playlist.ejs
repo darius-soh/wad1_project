@@ -1,0 +1,45 @@
+<%- include("common/header", { title: title }) %>
+
+<h2>Edit Playlist</h2>
+
+<% if (error) { %>
+  <p class="error"><%= error %></p>
+<% } %>
+
+<form action="/playlists/edit" method="POST">
+  <input type="hidden" name="playlistId" value="<%= formData.playlistId %>">
+
+  <label for="name">Playlist Name</label>
+  <input id="name" name="name" type="text" value="<%= formData.name %>">
+
+  <label for="description">Description</label>
+  <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
+
+  <label for="genre">Genre</label>
+  <select id="genre" name="genre">
+    <option value="" disabled <%= !formData.genre ? "selected" : "" %>>
+      --Select a Genre--
+    </option>
+
+    <% genres.forEach(function (g) { %>
+      <option value="<%= g %>" <%= formData.genre === g ? "selected" : "" %>>
+        <%= g %>
+      </option>
+    <% }); %>
+  </select>
+
+  <label for="createdAt">Created</label>
+  <input
+    id="createdAt"
+    name="createdAt"
+    type="datetime-local"
+    step="1"
+    value="<%= formData.createdAt %>"
+  >
+
+  <button type="submit">Save Changes</button>
+</form>
+
+</main>
+</body>
+</html>
