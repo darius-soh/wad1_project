@@ -1,6 +1,9 @@
 const playlistModel = require("../models/playlistModel");
 const songModel = require("../models/songModel");
 
+// Define the genres.
+const genres = ["Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "Lo-fi", "R&B"]
+
 // Show all playlists.
 async function listPlaylists(req, res) {
   try {
@@ -31,6 +34,7 @@ function showAddPlaylistForm(req, res) {
   return res.render("add-playlist", {
     title: "Add Playlist",
     error: "",
+    genres: genres, // Pass the list to the view
     formData: {
       name: "",
       description: "",
@@ -52,6 +56,7 @@ async function createPlaylist(req, res) {
       return res.render("add-playlist", {
         title: "Add Playlist",
         error: "All fields are required.",
+        genres: genres, // Pass the list here too
         // Template for the formData
         formData: {
           name: name,
@@ -75,6 +80,7 @@ async function createPlaylist(req, res) {
     return res.render("add-playlist", {
       title: "Add Playlist",
       error: "Something went wrong.",
+      genres: genres,
       formData: {
         name: name,
         description: description,
