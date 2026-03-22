@@ -18,8 +18,14 @@ const playlistSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    // Save the logged-in user's ID to link this playlist to them
-    // ref: "User" links it to the User model
+    // userId: stores the MongoDB ObjectId of the user who owns this playlist
+    // type: mongoose.Schema.Types.ObjectId
+    //   This means the value must be a MongoDB ObjectId, not a normal string or number.
+    // ref: "User"
+    //   This tells Mongoose that this ObjectId points to the User model.
+    //   In other words, userId should contain the _id of a user document.
+    // required: true
+    //   Ensures that every playlist must be linked to a user.  
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -32,8 +38,10 @@ const Playlist = mongoose.model("Playlist", playlistSchema);
 
 // Moving onto our Model functions
 
-// Return all playlist documents for that particular user.
-// The find() method in Mongoose is used to query documents from a collection. 
+// getAllPlaylists: returns all playlist documents that belong to a specific user
+// Playlist.find({ userId: userId })
+// The find() method in Mongoose queries the Playlist collection for all documents
+// where the userId field matches the given userId.
 // It returns a Mongoose Query object, which 
 // supports chaining additional operations like sorting, limiting, and filtering.
 function getAllPlaylists(userId) {
