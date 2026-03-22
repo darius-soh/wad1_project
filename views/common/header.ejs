@@ -89,6 +89,16 @@
       <a href="/playlists">All Playlists</a>
       <a href="/playlists/add">Add Playlist</a>
     </nav>
+
+    <!-- Only show if user is logged in -->
+    <!-- User menu, top-right -->
+    <% if (typeof user !== 'undefined' && user) { %>
+    <div style="position: absolute; top: 20px; right: 20px;">
+      Hi, <%= user.username %> | 
+      <a href="/change-password">Change Password</a> | 
+      <a href="/logout">Logout</a>
+    </div>
+  <% } %>
   </header>
 
   <main>

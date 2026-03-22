@@ -2,8 +2,13 @@ const express = require("express");
 
 const playlistController = require("../controllers/playlistController");
 
+const authMiddleware = require('../middleware/auth-middleware');
+
 // Create a router to handle all playlist-related routes.
 const router = express.Router();
+
+// All playlist routes are protected. Only can access when logged in.
+router.use(authMiddleware.isLoggedIn);
 
 // Show all playlists.
 router.get("/", playlistController.listPlaylists);

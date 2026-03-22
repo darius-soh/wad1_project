@@ -1,0 +1,20 @@
+<%- include("common/header", { title: title }) %>
+
+<h2>Welcome <%= user.username %>!</h2>
+
+<h3>Your Playlists:</h3>
+
+<% if (playlists.length === 0) { %>
+  <p>You have no playlists yet. <a href="/playlists/add">Create one</a></p>
+<% } else { %>
+  <ul>
+    <% playlists.forEach(playlist => { %>
+      <li>
+        <a href="/playlists/view?id=<%= playlist._id %>"><%= playlist.name %></a>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+
+</body>
+</html>

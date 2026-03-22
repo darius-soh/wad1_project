@@ -17,6 +17,13 @@ const playlistSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    // Save the logged-in user's ID to link this playlist to them
+    // ref: "User" links it to the User model
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
 });
 
@@ -25,12 +32,12 @@ const Playlist = mongoose.model("Playlist", playlistSchema);
 
 // Moving onto our Model functions
 
-// Return all playlist documents 
+// Return all playlist documents for that particular user.
 // The find() method in Mongoose is used to query documents from a collection. 
 // It returns a Mongoose Query object, which 
 // supports chaining additional operations like sorting, limiting, and filtering.
-function getAllPlaylists() {
-    return Playlist.find(); 
+function getAllPlaylists(userId) {
+    return Playlist.find({userId: userId}); 
 }
 
 // Return a single playlist by its MongoDB ID.
