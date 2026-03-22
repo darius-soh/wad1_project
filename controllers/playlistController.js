@@ -7,12 +7,14 @@ const genres = ["Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "Lo-fi", "R&B"]
 // Show all playlists.
 async function listPlaylists(req, res) {
   try {
-    // Load every playlist from the database.
-    const playlists = await playlistModel.getAllPlaylists();
+    // Load every playlist from the database for that user.
+    const playlists = await playlistModel.getAllPlaylists(req.session.user.id);
 
     // Send the playlists to the list page.
     return res.render("playlist-list", {
       title: "All Playlists",
+      // include user so that the header will be visible
+      user: req.session.user, 
       playlists: playlists,
       error: ""
     });
@@ -20,6 +22,7 @@ async function listPlaylists(req, res) {
     console.error(error);
     return res.render("playlist-list", {
       title: "All Playlists",
+      user: req.session.user, 
       // If there is an error in the playlists, send an empty array
       playlists: [],
       // error message will be "Something went wrong"
@@ -33,6 +36,7 @@ function showAddPlaylistForm(req, res) {
   // Show an empty form when the page first loads.
   return res.render("add-playlist", {
     title: "Add Playlist",
+    user: req.session.user, 
     error: "",
     genres: genres, // Pass the list to the view
     formData: {
@@ -55,6 +59,7 @@ async function createPlaylist(req, res) {
     if (!name || !description || !genre) {
       return res.render("add-playlist", {
         title: "Add Playlist",
+        user: req.session.user, 
         error: "All fields are required.",
         genres: genres, // Pass the list here too
         // Template for the formData
@@ -67,10 +72,12 @@ async function createPlaylist(req, res) {
     }
 
     // Save the new playlist in MongoDB if we reach this stage then it will be able to add to creating the platlist
+    // Include the logged-in user's ID
     const playlist = await playlistModel.createPlaylist({
       name: name,
       description: description,
-      genre: genre
+      genre: genre,
+      userId: req.session.user.id
     });
 
     // Open the new playlist page after saving, this follows a get request which we will extract later on
@@ -79,6 +86,7 @@ async function createPlaylist(req, res) {
     console.error(error);
     return res.render("add-playlist", {
       title: "Add Playlist",
+      user: req.session.user, 
       error: "Something went wrong.",
       genres: genres,
       formData: {
@@ -99,6 +107,7 @@ async function showPlaylist(req, res) {
     if (!playlistId) {
       return res.render("playlist-detail", {
         title: "Playlist Details",
+        user: req.session.user, 
         playlist: null,
         songs: [],
         error: "Playlist not found."
@@ -118,6 +127,7 @@ async function showPlaylist(req, res) {
     if (!playlist) {
       return res.render("playlist-detail", {
         title: "Playlist Details",
+        user: req.session.user, 
         playlist: null,
         songs: songs,
         error: "Playlist not found."
@@ -127,6 +137,7 @@ async function showPlaylist(req, res) {
     // Show the playlist together with all songs inside it.
     return res.render("playlist-detail", {
       title: playlist.name,
+      user: req.session.user, 
       playlist: playlist,
       songs: songs,
       error: ""
@@ -135,6 +146,7 @@ async function showPlaylist(req, res) {
     console.error(error);
     return res.render("playlist-detail", {
       title: "Playlist Details",
+      user: req.session.user, 
       playlist: null,
       songs: [],
       error: "Something went wrong."
@@ -151,6 +163,7 @@ async function showAddSongForm(req, res) {
     if (!playlistId) {
       return res.render("add-song", {
         title: "Add Song",
+        user: req.session.user,
         playlist: null,
         error: "Playlist not found.",
         formData: {
@@ -170,6 +183,7 @@ async function showAddSongForm(req, res) {
     if (!playlist) {
       return res.render("add-song", {
         title: "Add Song",
+        user: req.session.user,
         playlist: null,
         error: "Playlist not found.",
         formData: {
@@ -186,6 +200,7 @@ async function showAddSongForm(req, res) {
     // Show an empty song form for the selected playlist.
     return res.render("add-song", {
       title: "Add Song",
+      user: req.session.user,
       playlist: playlist,
       error: "",
       formData: {
@@ -200,6 +215,7 @@ async function showAddSongForm(req, res) {
     console.error(error);
     return res.render("add-song", {
       title: "Add Song",
+      user: req.session.user,
       playlist: null,
       error: "Something went wrong.",
       formData: {
@@ -230,6 +246,7 @@ async function createSong(req, res) {
     if (!playlistId) {
       return res.render("add-song", {
         title: "Add Song",
+        user: req.session.user,
         playlist: null,
         error: "Playlist not found.",
         formData: {
@@ -247,6 +264,7 @@ async function createSong(req, res) {
     if (!playlist) {
       return res.render("add-song", {
         title: "Add Song",
+        user: req.session.user,
         playlist: null,
         error: "Playlist not found.",
         formData: {
@@ -263,6 +281,7 @@ async function createSong(req, res) {
     if (!title || !artist || !album) {
       return res.render("add-song", {
         title: "Add Song",
+        user: req.session.user,
         playlist: playlist,
         error: "Title, artist, and album are required.",
         formData: {
@@ -282,6 +301,7 @@ async function createSong(req, res) {
       if (Number.isNaN(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
         return res.render("add-song", {
           title: "Add Song",
+          user: req.session.user,
           playlist: playlist,
           error: "Rating must be a number from 1 to 5.",
           formData: {
@@ -322,6 +342,7 @@ async function createSong(req, res) {
     console.error(error);
     return res.render("add-song", {
       title: "Add Song",
+      user: req.session.user,
       playlist: playlist,
       error: "Something went wrong.",
       formData: {
@@ -518,6 +539,7 @@ async function deletePlaylist(req, res) {
 
       return res.render("playlist-list", {
         title: "All Playlists",
+        user: req.session.user,
         playlists: playlists,
         error: "Playlist not found."
       });
@@ -531,6 +553,7 @@ async function deletePlaylist(req, res) {
 
       return res.render("playlist-list", {
         title: "All Playlists",
+        user: req.session.user,
         playlists: playlists,
         error: "Playlist not found."
       });
@@ -554,6 +577,7 @@ async function deletePlaylist(req, res) {
     console.error(error);
     return res.render("playlist-list", {
       title: "All Playlists",
+      user: req.session.user,
       playlists: [],
       error: "Something went wrong."
     });
@@ -572,6 +596,7 @@ async function deleteSong(req, res) {
     if (!playlistId || !songId) {
       return res.render("playlist-detail", {
         title: "Playlist Details",
+        user: req.session.user,
         playlist: null,
         songs: [],
         error: "Song not found."
@@ -583,6 +608,7 @@ async function deleteSong(req, res) {
     if (!playlist) {
       return res.render("playlist-detail", {
         title: "Playlist Details",
+        user: req.session.user,
         playlist: null,
         songs: [],
         error: "Playlist not found."
@@ -598,6 +624,7 @@ async function deleteSong(req, res) {
 
       return res.render("playlist-detail", {
         title: playlist.name,
+        user: req.session.user,
         playlist: playlist,
         songs: songs,
         error: "Song not found."
@@ -613,6 +640,7 @@ async function deleteSong(req, res) {
     console.error(error);
     return res.render("playlist-detail", {
       title: playlist ? playlist.name : "Playlist Details",
+      user: req.session.user,
       playlist: playlist,
       songs: songs,
       error: "Something went wrong."
