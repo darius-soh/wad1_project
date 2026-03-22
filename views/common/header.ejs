@@ -7,6 +7,7 @@
   <title><%= title %></title>
 
   <!-- Adding spotify style coloring CSS because we cool  -->
+  <!-- Added hover effect to indicate they're clickable   -->
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -83,22 +84,50 @@
       width: 120px;
     }
 
+    .user-menu {
+      position: absolute; /* keeps it pinned */
+      top: 20px;
+      right: 20px;
+    }
+
+    .user-menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    
+    .user-menu a:hover {
+      text-decoration: underline;
+    }
+    .action-button:hover {
+  background-color: #17a34a; /* Slightly darker green on hover */
+}
   </style>
 </head>
 <body>
   <!-- Main page header -->
   <header>
     <h1>Mini Spotify Playlist Manager</h1>
+
     <!-- Main navigation -->
-    <nav>
-      <a href="/playlists">All Playlists</a>
-      <a href="/playlists/add">Add Playlist</a>
-    </nav>
+     <nav>
+        <% if (user) { %>
+          <!-- Only show when logged in -->
+          <a href="/playlists">All Playlists</a>
+          <a href="/playlists/add">Add Playlist</a>
+        <% } else { %>
+          <!-- Show when NOT logged in -->
+          <a href="/login">Login</a>
+          <a href="/register">Register</a>
+        <% } %>
+      </nav>
+    
 
     <!-- Only show if user is logged in -->
     <!-- User menu, top-right -->
-    <% if (typeof user !== 'undefined' && user) { %>
-    <div style="position: absolute; top: 20px; right: 20px;">
+    <% if (user) { %>
+    <div class="user-menu">
       Hi, <%= user.username %> | 
       <a href="/change-password">Change Password</a> | 
       <a href="/logout">Logout</a>

@@ -43,12 +43,6 @@ server.use(session({
     saveUninitialized: false // Prevents a new, empty session from being saved to the store.
 }));
 
-
-// Redirect the root page to playlists.
-server.get("/", function (req, res) {
-  return res.redirect("/playlists");
-});
-
 // Mount user routes first.
 server.use("/", userRoutes);
 

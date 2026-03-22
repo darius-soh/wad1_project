@@ -383,6 +383,7 @@ async function showEditPlaylist(req, res) {
     if (!playlistId) {
       return res.render("edit-playlist", {
         title: "Edit Playlist",
+        user: req.session.user,
         error: "Playlist not found.",
         genres: genres,
         formData: {
@@ -402,6 +403,7 @@ async function showEditPlaylist(req, res) {
     if (!playlist) {
       return res.render("edit-playlist", {
         title: "Edit Playlist",
+        user: req.session.user,
         error: "Playlist not found.",
         genres: genres,
         formData: {
@@ -417,6 +419,7 @@ async function showEditPlaylist(req, res) {
     // Open the edit form with the playlist's existing values pre-filled
     return res.render("edit-playlist", {
       title: "Edit Playlist",
+      user: req.session.user,
       error: "",
       genres: genres,
       formData: {
@@ -432,6 +435,7 @@ async function showEditPlaylist(req, res) {
     console.error(error);
     return res.render("edit-playlist", {
       title: "Edit Playlist",
+      user: req.session.user,
       error: "Something went wrong.",
       genres: genres,
       formData: {
