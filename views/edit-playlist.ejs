@@ -28,15 +28,12 @@
     <% }); %>
   </select>
 
-  <label for="createdAt">Created</label>
-  <input
-    id="createdAt"
-    name="createdAt"
-    type="datetime-local"
-    step="1"
-    value="<%= formData.createdAt %>"
-  >
+  <label for="rating">Rating (1 to 5)</label>
+  <input id="rating" name="rating" type="number" min="1" max="5" value="<%= formData.rating %>">
 
+  <label for="createdAt">Created</label>
+  <input id="createdAt" name="createdAt" type="datetime-local" step="1" value="<%= formData.createdAt %>">
+  <br><br>
   <button type="submit" class="action-button">Save Changes</button>
 </form>
 

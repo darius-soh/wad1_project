@@ -38,7 +38,9 @@ router.get("/songs/add", playlistController.showAddSongForm);
 router.post("/songs/add", playlistController.createSong);
 
 // Delete one song using req.body.playlistId and req.body.songId.
-router.post("/songs/delete", playlistController.deleteSong);
+// router.post("/songs/delete", playlistController.deleteSong);
+router.get("/songs/delete", playlistController.deleteSong);
+
 
 // Export the router so server.js can use it.
 module.exports = router;

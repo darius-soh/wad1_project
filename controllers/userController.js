@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
-const playlistModel = require("../models/playlistModel");
 
 // Show the login page with empty fields
 exports.loginGet = (req,res) => {
@@ -27,8 +26,8 @@ exports.loginPost = async (req,res) => {
         id: user._id,
         username: user.username,
     }
-    // Redirect to welcome page after login
-    res.redirect("/welcome")
+    // Redirect to playlists page after login
+    res.redirect("/playlists")
 };
 
 // Show empty registration form
@@ -113,29 +112,6 @@ exports.changePasswordPost = async (req, res) => {
       success: "Password changed successfully! Redirecting to login..."
     });
   });
-};
-
-exports.welcome = async (req, res) => {
-  try {
-    // Get playlists of the logged-in user
-    const playlists = await playlistModel.getAllPlaylists(req.session.user.id);
-
-    // Render the welcome page with user info and their playlists
-    res.render("welcome", {
-      title: "Welcome " + req.session.user.username,
-      user: req.session.user,
-      playlists: playlists,
-      error: ""
-    });
-  } catch (error) {
-    console.error(error);
-    res.render("welcome", {
-      title: "Welcome",
-      user: req.session.user,
-      playlists: [],
-      error: "Could not load playlists."
-    });
-  }
 };
 
 // Clears session when user logs out.
