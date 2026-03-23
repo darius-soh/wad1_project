@@ -1,4 +1,4 @@
-// Route Proection Middleware.
+// Route Protection Middleware.
 
 // Checks if there's a user stored in session else display an error and redirect to /login.
 exports.isLoggedIn = (req, res, next) => {
