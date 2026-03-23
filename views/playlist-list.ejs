@@ -15,6 +15,8 @@
   </tr>
 </table>
 <hr>
+<!-- sort playlist option -->
+
 
 <!-- Genre dropdown selection -->
 <form action="/playlists" method="GET">
@@ -29,6 +31,15 @@
     <% } %>
   </select>
   <button type="submit">Filter</button>
+  <h3>Sort:</h3>
+  <select id='sortType' name = "sortType">
+    <option value = "" selected>Sort Type</option>
+    <option value = "A-Z">A-Z</option>
+    <option value = "Z-A">Z-A</option>
+    <option value = "RatingUp">Rating (Ascending)</option>
+    <option value = "RatingDown">Rating (Descending)</option>
+  </select>
+  <button type="submit">Sort</button>
 </form>
 
 <!-- Error message -->

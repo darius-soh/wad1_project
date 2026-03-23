@@ -17,6 +17,20 @@ async function listPlaylists(req, res) {
       playlists = playlists.filter(p => p.genre === selectedGenre);
     }
 
+    // If sort wwas selected, sorts by request
+    const sortType = (req.query.sortType || "").trim();
+
+    console.log(playlists)
+    if (sortType === "A-Z") {
+      playlists.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortType === "Z-A") {
+      playlists.sort((a, b) => b.name.localeCompare(a.name));
+    } else if (sortType === "RatingUp"){
+      playlists.sort((a, b) => (a.rating || 0) - (b.rating || 0))
+    } else if (sortType === "RatingDown"){
+      playlists.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    }
+
     // Send the playlists to the list page.
     return res.render("playlist-list", {
       title: "All Playlists",
@@ -26,7 +40,8 @@ async function listPlaylists(req, res) {
       genres: genres,
       selectedGenre: selectedGenre,
       error: ""
-    });
+    })
+;
   } catch (error) {
     console.error(error);
     return res.render("playlist-list", {
@@ -39,8 +54,7 @@ async function listPlaylists(req, res) {
       // error message will be "Something went wrong"
       error: "Something went wrong."
     });
-  }
-}
+}}
 
 // Show the add playlist page.
 function showAddPlaylistForm(req, res) {
@@ -729,6 +743,8 @@ async function deleteSong(req, res) {
     });
   }
 }
+
+
 
 module.exports = {
   listPlaylists: listPlaylists,

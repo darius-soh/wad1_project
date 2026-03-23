@@ -31,6 +31,7 @@ router.get("/edit", playlistController.showEditPlaylist);
 // Process new playlist details
 router.post("/edit", playlistController.editPlaylist);
 
+
 // Show the add song form using req.query.id.
 router.get("/songs/add", playlistController.showAddSongForm);
 
@@ -40,7 +41,6 @@ router.post("/songs/add", playlistController.createSong);
 // Delete one song using req.body.playlistId and req.body.songId.
 // router.post("/songs/delete", playlistController.deleteSong);
 router.get("/songs/delete", playlistController.deleteSong);
-
 
 // Export the router so server.js can use it.
 module.exports = router;
