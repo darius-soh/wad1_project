@@ -20,7 +20,6 @@ async function listPlaylists(req, res) {
     // If sort wwas selected, sorts by request
     const sortType = (req.query.sortType || "").trim();
 
-    console.log(playlists)
     if (sortType === "A-Z") {
       playlists.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortType === "Z-A") {
