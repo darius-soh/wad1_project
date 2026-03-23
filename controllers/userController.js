@@ -43,6 +43,12 @@ exports.registerPost = async (req,res) => {
     if (existingUser){
         return res.render("register", {username:"", password:"", user: null, error:"Username taken"})
     } 
+
+    // Check password validity
+    if (!User.isValidPassword(password)){
+      return res.render("register", {username, password:"", user:null, error:"Password must be at least 8 characters and include uppercase, lowercase, digit and symbol."})
+    }
+
     // Create new user in DB
     await User.createUser(username, password);
     // Redirect to login page after successful registration
@@ -58,10 +64,18 @@ exports.changePasswordGet = (req, res) => {
 exports.changePasswordPost = async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
 
+
   // Check if new password matches confirmation
   if (newPassword !== confirmPassword) {
     return res.render("change-password", {title: "Change Password", user: req.session.user, error: "Passwords do not match", success: "" });
   }
+
+  // Check validity of new password 
+    if (!User.isValidPassword(newPassword)){
+      return res.render("change-password", 
+        {title: "Change Password", user: req.session.user, error: "Password must be at least 8 characters and include uppercase, lowercase, digit and symbol.", success: "" }); 
+    }
+
 
   // Prevent user from changing to the same password
   if (oldPassword === newPassword) {
@@ -83,8 +97,7 @@ exports.changePasswordPost = async (req, res) => {
   }
 
   // Hash new password
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(newPassword, salt);
+  const passwordHash = await bcrypt.hash(newPassword, 10);
 
   // Save new password to DB
   await User.changePassword(req.session.user.username, passwordHash);

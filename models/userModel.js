@@ -29,9 +29,41 @@ function getUserByUsername(username) {
 
 // Insert a new user document.
 async function createUser (username, password){
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    const passwordHash = await bcrypt.hash(password, 10);
     return User.create({username, passwordHash});
+}
+
+// Validate password to fit requirement.
+function isValidPassword(password){
+
+  // Ensures password is at least 8 characters long.
+  if (password.length<8){
+    return false;
+  }
+
+  // Initialise flags to all false, to check for these conditions.
+  let hasLower = false;
+  let hasUpper = false;
+  let hasDigit = false;
+  let hasSymbol = false;
+
+  for (let char of password){
+
+    // Check if lowercase letter is present using unicode value.
+    if (char >= "a" && char <= "z") hasLower = true;
+
+    // Check if uppercase letter is present using unicode value.
+    else if (char >= "A" && char <= "Z") hasUpper = true;
+
+    // Check if digit is present using unicode value.
+    else if (char >= "0" && char <= "9") hasDigit = true;
+
+    // Check if symbol is present.
+    else if ("@!#$%^&*".includes(char)) hasSymbol = true;
+  }
+
+  // Return true if password match all conditions.
+  return hasLower && hasUpper && hasDigit && hasSymbol;
 }
 
 // Change password. 
@@ -41,8 +73,9 @@ function changePassword(username, passwordHash){
 
 module.exports = {
   User,
-  getUserByUsername: getUserByUsername,
-  createUser: createUser,
-  changePassword: changePassword
+  getUserByUsername,
+  createUser,
+  changePassword,
+  isValidPassword
 };
 
