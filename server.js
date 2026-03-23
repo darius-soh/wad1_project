@@ -1,38 +1,40 @@
-// Load environment variables from config.env.
+// Load environment variables from config.env
 require("dotenv").config({ path: "./config.env" });
 
-// Import required packages.
+// Import required packages
 const express = require("express");
 
-// Import express-session library.
+// Import express-session library
 const session = require('express-session');
 
-// Import path module.
+// Import path module
 const path = require('path');
 
-// Import mongoose.
+// Import mongoose
 const mongoose = require("mongoose");
 
-// Import playlist routes.
+// Import playlist routes
 const playlistRoutes = require("./routes/playlistRoutes");
 
-// Import user routes.
+// Import user routes
 const userRoutes = require("./routes/userRoutes");
 
-// Create the Express server.
+// Create the Express server
 const server = express();
 
-// Parse form data from POST requests.
+// Parse form data from POST requests
 server.use(express.urlencoded({ extended: true }));
 
-// Parse JSON data from requests.
+// Serve statis files from 'public' directory
+server.use(express.static(path.join(__dirname, "public")));
+
+// Parse JSON data from requests
 server.use(express.json());
 
-// Set EJS as the view engine for rendering dynamic HTML pages.
+// Set EJS as the view engine for rendering dynamic HTML pages
 server.set("view engine", "ejs");
 
-// Set the folder where EJS view files are stored.
-// server.set("views", __dirname + "/views"); 
+// Set the folder where EJS view files are stored
 server.set('views', path.join(__dirname, 'views'));
 
 // Set up sessions to track who is logged in.

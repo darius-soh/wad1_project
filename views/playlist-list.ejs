@@ -1,15 +1,40 @@
 <%- include("common/header", { title: title }) %>
 
 <!-- Page heading -->
-<h2>All Playlists</h2>
+<table width="100%">
+  <tr>
+    <td>
+      <h1>All Playlists</h1>
+    </td>
+    <td align="right">
+      <!-- Link to Create a new playlist -->
+      <a href="/playlists/add">
+        <button type="button">Create a new playlist</button>
+      </a>
+    </td>
+  </tr>
+</table>
+<hr>
+
+<!-- Genre dropdown selection -->
+<form action="/playlists" method="GET">
+  <h3>Filter by genre</h3>
+  <select id="genre" name="genre">
+    <option value="">All Genres</option>
+
+    <% for (const g of genres) { %>
+      <option value="<%= g %>" <%= selectedGenre === g ? "selected" : "" %>>
+        <%= g %>
+      </option>
+    <% } %>
+  </select>
+  <button type="submit">Filter</button>
+</form>
 
 <!-- Error message -->
 <% if (error) { %>
   <p class="error"><%= error %></p>
 <% } %>
-
-<!-- Link to add a new playlist -->
-<p><a href="/playlists/add">Create a new playlist</a></p>
 
 <!-- Message when there are no playlists -->
 <% if (playlists.length === 0) { %>
@@ -21,27 +46,58 @@
 <!-- Getting the playlists from listPlaylists in controller -->
  <!-- First, we display -->
 <% for (const playlist of playlists) { %>
-    <h3><strong>Name:</strong> <a href="/playlists/view?id=<%= playlist._id %>"><%= playlist.name %></a></h3>
-    <p><strong>Description:</strong> <%= playlist.description %></p>
-    <p><strong>Genre:</strong> <%= playlist.genre %></p>
-<!-- toLocalString() converts the raw date into a human-readable format based on local settings -->
-    <p><strong>Created:</strong> <%= playlist.createdAt.toLocaleString() %></p>
-  
+    <!-- Playlist Name Row -->
+    <table width="100%" border="1">
+        <td colspan="2">
+          <!-- Delete Button -->
+          <form action="/playlists/delete" method="POST" class="inline-form" style="float: right; margin-top: 0;" onsubmit="return confirm('Delete <%= playlist.name %>?');">
+            <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
+            <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
+            <input type="hidden" name="playlistId" value="<%= playlist._id %>">
+            <button type="submit" class="icon-button delete-button">
+              <img src="/images/delete.png" alt="Delete" width="20">
+            </button>
+          </form>
 
-    <!-- inline-form keeps both forms on the same line -->
-    <form action="/playlists/delete" method="POST" class="inline-form">
-      <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
-      <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
-      <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-      <button type="submit" class="action-button">Delete Playlist</button>
-    </form>
+          <!-- Edit Button -->
+          <form action="/playlists/edit" method="GET" class="inline-form" style="float: right; margin-top: 0; margin-right: 8px;">
+            <input type="hidden" name="playlistId" value="<%= playlist._id %>">
+            <button type="submit" class="icon-button">
+              <img src="/images/edit.png" alt="Edit" width="20">
+            </button>
+          </form>
 
-    <form action="/playlists/edit" method="GET" class="inline-form">
-      <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-      <button type="submit" class="action-button">Edit Playlist</button>
-    </form>
+          <!-- Playlist Title -->
+          <h2 style="margin: 0;">
+            <a href="/playlists/view?id=<%= playlist._id %>"><%= playlist.name %></a>
+          </h2>
+        </td>
+      </tr>
+
+      <!-- Adding Description Row -->
+      <tr>
+        <td width="20%"><strong>Description:</strong></td>
+        <td><%= playlist.description %></td>
+      </tr>
+
+      <!-- Adding Genre Row -->
+      <tr>
+        <td width="20%"><strong>Genre:</strong></td>
+        <td><%= playlist.genre %></td>
+      </tr>
+
+      <!-- Adding Create Date Row -->
+      <!-- toLocalString() converts the raw date into a human-readable format based on local settings -->
+      <tr>
+        <td><strong>Created:</strong></td>
+        <td><%= playlist.createdAt.toLocaleString() %></td>
+      </tr>
+      <br>
+    </table>
 
 <% } %>
+
+
 
 </main>
 </body>
