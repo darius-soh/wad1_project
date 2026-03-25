@@ -15,6 +15,23 @@
 </table>
 <hr>
 
+<form action="/songs" method="GET">
+  <p><strong>Filter songs by genre</strong></p>
+  <select id="genre" name="genre">
+    <option value="">All Genres</option>
+
+    <% if (genres && genres.length > 0) { %>
+      <% for (const genre of genres) { %>
+        <option value="<%= genre %>" <%= selectedGenre === genre ? "selected" : "" %>>
+          <%= genre %>
+        </option>
+      <% } %>
+    <% } %>
+  </select>
+  <button type="submit">Filter</button>
+</form>
+<br>
+
 <!-- Error message -->
 <% if (error) { %>
   <p><%= error %></p>
@@ -33,6 +50,7 @@
       <th>Title</th>
       <th>Artist</th>
       <th>Album</th>
+      <th>Genre</th>
       <th>Playlist</th>
       <th>Action</th>
     </tr>
@@ -42,6 +60,7 @@
         <td><%= song.title %></td>
         <td><%= song.artist %></td>
         <td><%= song.album %></td>
+        <td><%= song.genre %></td>
         <td><%= song.playlistName %></td>
         <td>
           <a href="/songs/view?id=<%= song._id %>">View</a>
@@ -50,7 +69,7 @@
           <br>
           <a href="/reviews/add?songId=<%= song._id %>">Add Review</a>
           <br>
-          <form action="/songs/delete" method="POST" onsubmit="return confirm('Delete <%= song.title %>?');">
+          <form action="/songs/delete" method="POST">
             <input type="hidden" name="songId" value="<%= song._id %>">
             <button type="submit">Delete</button>
           </form>

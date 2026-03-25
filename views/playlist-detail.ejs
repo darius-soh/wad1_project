@@ -24,7 +24,7 @@
   </form>
   <br>
 
-  <form action="/playlists/delete" method="POST" onsubmit="return confirm('Delete <%= playlist.name %>?');">
+  <form action="/playlists/delete" method="POST">
     <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
     <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
     <input type="hidden" name="playlistId" value="<%= playlist._id %>">
@@ -34,7 +34,6 @@
   </form>
   <br>
   <p><strong>Description:</strong> <%= playlist.description %></p>
-  <p><strong>Genre:</strong> <%= playlist.genre %></p>
   <p><strong>Created:</strong> <%= playlist.createdAt.toLocaleString() %></p>
 
    <!-- Horizontal line separating playlist from songs -->
@@ -69,6 +68,7 @@
         <th>Title</th>
         <th>Artist</th>
         <th>Album</th>
+        <th>Genre</th>
         <th>Added</th>
         <th>Action</th>
       </tr>
@@ -78,6 +78,7 @@
           <td><%= song.title %></td>
           <td><%= song.artist %></td>
           <td><%= song.album %></td>
+          <td><%= song.genre %></td>
           <td><%= song.createdAt.toLocaleString() %></td>
           <td>
             <a href="/songs/view?id=<%= song._id %>">View</a>
@@ -86,7 +87,7 @@
             <br>
             <a href="/reviews/add?songId=<%= song._id %>">Add Review</a>
             <br>
-            <form action="/songs/delete" method="POST" onsubmit="return confirm('Delete <%= song.title %>?');">
+            <form action="/songs/delete" method="POST">
               <input type="hidden" name="songId" value="<%= song._id %>">
               <button type="submit">Delete</button>
             </form>

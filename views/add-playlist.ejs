@@ -19,20 +19,6 @@
   <br>
   <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
   <br><br>
-
-  <label for="genre">Genre</label>
-  <br>
-  <!--Making dropdown for genres-->
-  <select id="genre" name="genre">
-    <option value="" disabled <%= !formData.genre ? "selected" : "" %>>--Select a Genre--</option>
-
-    <% genres.forEach(function(g) { %> 
-      <option value="<%= g %>" <%= formData.genre === g ? "selected" : '' %>>
-        <%= g %>
-      </option>
-    <% }); %>
-  </select>
-  <br><br>
   <button type="submit" >Save Playlist</button>
 </form>
 

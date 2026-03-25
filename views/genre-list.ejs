@@ -44,7 +44,7 @@
         <td>
           <a href="/genres/edit?genreId=<%= genre._id %>">Edit</a>
           <br>
-          <form action="/genres/delete" method="POST" onsubmit="return confirm('Delete <%= genre.name %>?');">
+          <form action="/genres/delete" method="POST">
             <input type="hidden" name="genreId" value="<%= genre._id %>">
             <button type="submit">Delete</button>
           </form>

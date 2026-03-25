@@ -301,7 +301,6 @@ Fields:
 
 - `name`
 - `description`
-- `genre`
 - `createdAt`
 - `userId`
 
@@ -319,12 +318,14 @@ Fields:
 - `title`
 - `artist`
 - `album`
+- `genre`
 - `playlistId`
 - `createdAt`
 
 Purpose:
 
 - stores songs that belong to one playlist
+- stores one genre value for each song
 - links each song to its parent playlist through `playlistId`
 
 ### 4. Genre
@@ -341,11 +342,11 @@ Fields:
 Purpose:
 
 - stores custom genre values for one user
-- helps populate playlist genre dropdowns and filters
+- helps populate song genre dropdowns and song filters
 
 Important note:
 
-- playlists still store `genre` as a plain string
+- songs store `genre` as a plain string
 - the genre module is used to manage the list of possible genre names
 
 ### 5. Review
@@ -574,7 +575,6 @@ Main responsibilities:
 
 - show all playlists
 - sort playlists
-- filter playlists by genre
 - show add playlist page
 - create playlist
 - show one playlist with its songs
@@ -584,13 +584,14 @@ Main responsibilities:
 
 Special note:
 
-- this controller also loads user-defined genres from the genre module so playlist forms can reuse them
+- this controller now keeps playlists simple and treats them mainly as containers for songs
 
 ### songController.js
 
 Main responsibilities:
 
 - show all songs for the user
+- filter songs by genre
 - show one song
 - show add song form
 - create song
@@ -616,7 +617,7 @@ Main responsibilities:
 Special note:
 
 - genres are user-specific
-- the playlist controller reuses genre names as selectable playlist values
+- the song controller reuses genre names as selectable song values
 
 ### reviewController.js
 

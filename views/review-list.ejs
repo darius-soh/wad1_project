@@ -48,7 +48,7 @@
         <td>
           <a href="/reviews/edit?reviewId=<%= review._id %>">Edit</a>
           <br>
-          <form action="/reviews/delete" method="POST" onsubmit="return confirm('Delete <%= review.title %>?');">
+          <form action="/reviews/delete" method="POST">
             <input type="hidden" name="reviewId" value="<%= review._id %>">
             <button type="submit">Delete</button>
           </form>

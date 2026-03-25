@@ -48,6 +48,21 @@
     <input id="album" name="album" type="text" value="<%= formData.album %>">
     <br><br>
 
+    <label for="genre">Song Genre</label>
+    <br>
+    <select id="genre" name="genre">
+      <option value="">--Select a Genre--</option>
+
+      <% if (genres && genres.length > 0) { %>
+        <% for (const genre of genres) { %>
+          <option value="<%= genre %>" <%= formData.genre === genre ? "selected" : "" %>>
+            <%= genre %>
+          </option>
+        <% } %>
+      <% } %>
+    </select>
+    <br><br>
+
     <button type="submit">Save Changes</button>
   </form>
 <% } %>

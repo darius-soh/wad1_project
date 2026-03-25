@@ -4,31 +4,9 @@
 <h1>All Playlists</h1>
 <br>
 
-<!-- Link to Create a new playlist -->
-<a href="/playlists/add">
-  <button type="button">Create a new playlist</button>
-</a>
-<br>
-<hr>
-<!-- sort playlist option -->
-
-
-<!-- Genre dropdown selection -->
-<!-- The same form is used for both filtering by genre and sorting the playlist list -->
+<p><a href="/playlists/add">Create a new playlist</a></p>
 <form action="/playlists" method="GET">
-  <h3>Filter by genre</h3>
-  <select id="genre" name="genre">
-    <option value="">All Genres</option>
-
-    <% for (const g of genres) { %>
-      <option value="<%= g %>" <%= selectedGenre === g ? "selected" : "" %>>
-        <%= g %>
-      </option>
-    <% } %>
-  </select>
-  <button type="submit">Filter</button>
-  <br><br>
-  <h3>Sort:</h3>
+  <p><strong>Sort playlists</strong></p>
   <select id='sortType' name = "sortType">
     <option value = "" <%= !sortType ? "selected" : "" %>>Sort Type</option>
     <option value = "A-Z" <%= sortType === "A-Z" ? "selected" : "" %>>A-Z</option>
@@ -54,7 +32,8 @@
 
 <!-- Getting the playlists from listPlaylists in controller -->
 <!-- Each playlist is displayed as its own small table -->
-<% for (const playlist of playlists || []) { %>
+<% if (playlists && playlists.length > 0) { %>
+  <% for (const playlist of playlists) { %>
     <!-- Playlist Name Row -->
     <table width="100%" border="1">
         <td colspan="2">
@@ -64,23 +43,10 @@
           </h2>
           <br>
 
-          <!-- Edit Button -->
-          <form action="/playlists/edit" method="GET">
+          <p><a href="/playlists/edit?playlistId=<%= playlist._id %>">Edit Playlist</a></p>
+          <form action="/playlists/delete" method="POST">
             <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-            <button type="submit">
-              <img src="/images/edit.png" alt="Edit" width="20">
-            </button>
-          </form>
-          <br>
-
-          <!-- Delete Button -->
-          <form action="/playlists/delete" method="POST" onsubmit="return confirm('Delete <%= playlist.name %>?');">
-            <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
-            <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
-            <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-            <button type="submit">
-              <img src="/images/delete.png" alt="Delete" width="20">
-            </button>
+            <button type="submit">Delete Playlist</button>
           </form>
         </td>
       </tr>
@@ -91,12 +57,6 @@
         <td><%= playlist.description %></td>
       </tr>
 
-      <!-- Adding Genre Row -->
-      <tr>
-        <td width="20%"><strong>Genre:</strong></td>
-        <td><%= playlist.genre %></td>
-      </tr>
-
       <!-- Adding Create Date Row -->
       <!-- toLocalString() converts the raw date into a human-readable format based on local settings -->
       <tr>
@@ -105,7 +65,7 @@
       </tr>
     </table>
     <br><br>
-
+  <% } %>
 <% } %>
 
 

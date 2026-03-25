@@ -46,7 +46,7 @@
         <td>
           <a href="/tags/edit?tagId=<%= tag._id %>">Edit</a>
           <br>
-          <form action="/tags/delete" method="POST" onsubmit="return confirm('Delete <%= tag.name %>?');">
+          <form action="/tags/delete" method="POST">
             <input type="hidden" name="tagId" value="<%= tag._id %>">
             <button type="submit">Delete</button>
           </form>

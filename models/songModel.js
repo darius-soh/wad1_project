@@ -15,6 +15,10 @@ const songSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  genre: {
+    type: String,
+    required: true
+  },
   playlistId: {
 // type: mongoose.Schema.Types.ObjectId
 // This means the value must be a MongoDB ObjectId, not a normal string or number.

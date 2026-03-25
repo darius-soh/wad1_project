@@ -1,6 +1,11 @@
 const songModel = require("../models/songModel");
 const playlistModel = require("../models/playlistModel");
+const genreModel = require("../models/genreModel");
 const reviewModel = require("../models/reviewModel");
+
+// Default genres to show before the user creates custom genres.
+// These act as starter values even if the user has not created any genre documents yet.
+const defaultGenres = ["Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "Lo-fi", "R&B"];
 
 // Load all playlists that belong to the logged-in user.
 // We use these playlists to work out which songs the current user is allowed to access.
@@ -55,6 +60,47 @@ async function loadUserSongs(playlists) {
   return songs;
 }
 
+// Build the list of genre names for song forms and song filtering.
+// This merges built-in default genres with any custom genres created by the user.
+async function loadGenreNames(userId, extraGenre) {
+  const savedGenres = await genreModel.getAllGenres(userId);
+  const genreNames = [];
+
+  for (const genreName of defaultGenres) {
+    genreNames.push(genreName);
+  }
+
+  for (const genre of savedGenres) {
+    let exists = false;
+
+    for (const existingGenreName of genreNames) {
+      if (existingGenreName === genre.name) {
+        exists = true;
+      }
+    }
+
+    if (!exists) {
+      genreNames.push(genre.name);
+    }
+  }
+
+  if (extraGenre) {
+    let exists = false;
+
+    for (const existingGenreName of genreNames) {
+      if (existingGenreName === extraGenre) {
+        exists = true;
+      }
+    }
+
+    if (!exists) {
+      genreNames.push(extraGenre);
+    }
+  }
+
+  return genreNames;
+}
+
 // Build the empty song form data.
 // This keeps the add/edit pages simple because the form always receives predictable values.
 function buildEmptySongFormData(playlistId) {
@@ -63,21 +109,158 @@ function buildEmptySongFormData(playlistId) {
     playlistId: playlistId || "",
     title: "",
     artist: "",
-    album: ""
+    album: "",
+    genre: ""
+  };
+}
+
+// Read one text field from the URL query and remove extra spaces.
+// We use this helper so Spotify search values stay consistent across the add song page.
+function readQueryText(req, fieldName) {
+  return String(req.query[fieldName] || "").trim();
+}
+
+// Ask Spotify for an access token using the client credentials flow.
+// This token is needed before the app can call Spotify's search endpoint.
+async function getSpotifyAccessToken() {
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+
+  // Stop early if the Spotify environment variables were not added yet.
+  if (!clientId || !clientSecret) {
+    throw new Error("Spotify search is not configured.");
+  }
+
+  // Spotify expects the client ID and secret to be combined and encoded.
+  // The Authorization header uses Basic followed by a base64 string.
+  const encodedCredentials = Buffer.from(clientId + ":" + clientSecret).toString("base64");
+
+  const response = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": "Basic " + encodedCredentials
+    },
+    body: "grant_type=client_credentials"
+  });
+
+  // If Spotify rejects the request, stop and show an error on the page.
+  if (!response.ok) {
+    throw new Error("Could not connect to Spotify.");
+  }
+
+  const tokenData = await response.json();
+
+  return tokenData.access_token;
+}
+
+// Search Spotify for tracks using the text typed by the user.
+// We keep only the fields that help fill in our own song form.
+async function searchSpotifyTracks(searchText) {
+  const accessToken = await getSpotifyAccessToken();
+
+  // Build the Spotify search URL using the user's text.
+  // encodeURIComponent keeps spaces and special characters safe in the URL.
+  const searchUrl =
+    "https://api.spotify.com/v1/search?type=track&limit=5&q=" +
+    encodeURIComponent(searchText);
+
+  const response = await fetch(searchUrl, {
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + accessToken
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Spotify search failed.");
+  }
+
+  const spotifyData = await response.json();
+  const results = [];
+
+  // Each result is reduced to simple fields that our EJS page can show clearly.
+  if (spotifyData.tracks && spotifyData.tracks.items) {
+    for (const track of spotifyData.tracks.items) {
+      let artistNames = "";
+
+      // Join all artist names into one simple comma-separated string.
+      for (let i = 0; i < track.artists.length; i++) {
+        if (i > 0) {
+          artistNames = artistNames + ", ";
+        }
+
+        artistNames = artistNames + track.artists[i].name;
+      }
+
+      results.push({
+        spotifyId: track.id,
+        title: track.name || "",
+        artist: artistNames,
+        artistId: track.artists && track.artists.length > 0 ? track.artists[0].id : "",
+        artistName: track.artists && track.artists.length > 0 ? track.artists[0].name : "",
+        album: track.album ? track.album.name : "",
+        spotifyUrl:
+          track.external_urls && track.external_urls.spotify
+            ? track.external_urls.spotify
+            : ""
+      });
+    }
+  }
+
+  return results;
+}
+
+// Load one artist from Spotify after the user chooses a song result.
+// The add song page uses this to show a small artist insight box.
+async function getSpotifyArtistDetails(artistId) {
+  const accessToken = await getSpotifyAccessToken();
+
+  const response = await fetch("https://api.spotify.com/v1/artists/" + encodeURIComponent(artistId), {
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + accessToken
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not load Spotify artist details.");
+  }
+
+  const artistData = await response.json();
+
+  return {
+    name: artistData.name || "",
+    spotifyUrl:
+      artistData.external_urls && artistData.external_urls.spotify
+        ? artistData.external_urls.spotify
+        : ""
   };
 }
 
 // Show all songs for the logged-in user.
 // We load the user's playlists first, then all songs inside those playlists.
 async function listSongs(req, res) {
+  const selectedGenre = (req.query.genre || "").trim();
+
   try {
     const playlists = await loadUserPlaylists(req.session.user.id);
-    const songs = await loadUserSongs(playlists);
+    let songs = await loadUserSongs(playlists);
+    const genres = await loadGenreNames(req.session.user.id, selectedGenre);
+
+    // If a song genre was selected, only keep songs from that genre.
+    if (selectedGenre) {
+      songs = songs.filter(function (song) {
+        return song.genre === selectedGenre;
+      });
+    }
 
     return res.render("song-list", {
       title: "All Songs",
       user: req.session.user,
       songs: songs,
+      genres: genres,
+      selectedGenre: selectedGenre,
       error: ""
     });
   } catch (error) {
@@ -87,6 +270,8 @@ async function listSongs(req, res) {
       title: "All Songs",
       user: req.session.user,
       songs: [],
+      genres: defaultGenres,
+      selectedGenre: selectedGenre,
       error: "Something went wrong."
     });
   }
@@ -166,17 +351,67 @@ async function showSong(req, res) {
 async function showAddSongForm(req, res) {
   // playlistId may come from a URL like /songs/add?playlistId=...
   // If present, it can be used to pre-select one playlist in the form.
-  const playlistId = (req.query.playlistId || "").trim();
+  const playlistId = readQueryText(req, "playlistId");
+  const spotifyQuery = readQueryText(req, "spotifyQuery");
+  const selectedTitle = readQueryText(req, "selectedTitle");
+  const selectedArtist = readQueryText(req, "selectedArtist");
+  const selectedArtistId = readQueryText(req, "selectedArtistId");
+  const selectedAlbum = readQueryText(req, "selectedAlbum");
 
   try {
     const playlists = await loadUserPlaylists(req.session.user.id);
+    const genres = await loadGenreNames(req.session.user.id, "");
+    const formData = buildEmptySongFormData(playlistId);
+    let spotifyResults = [];
+    let spotifyError = "";
+    let artistInsight = null;
+
+    // If the user selected one Spotify result, use it to pre-fill the local form.
+    if (selectedTitle) {
+      formData.title = selectedTitle;
+    }
+
+    if (selectedArtist) {
+      formData.artist = selectedArtist;
+    }
+
+    if (selectedAlbum) {
+      formData.album = selectedAlbum;
+    }
+
+    // If one Spotify song was chosen, load a small artist summary for the page.
+    if (selectedArtistId) {
+      try {
+        artistInsight = await getSpotifyArtistDetails(selectedArtistId);
+      } catch (artistError) {
+        spotifyError = artistError.message;
+      }
+    }
+
+    // Only call Spotify when the user actually typed a search query.
+    if (spotifyQuery) {
+      try {
+        spotifyResults = await searchSpotifyTracks(spotifyQuery);
+
+        if (spotifyResults.length === 0) {
+          spotifyError = "No Spotify songs were found for that search.";
+        }
+      } catch (spotifySearchError) {
+        spotifyError = spotifySearchError.message;
+      }
+    }
 
     return res.render("add-song", {
       title: "Add Song",
       user: req.session.user,
       playlists: playlists,
+      genres: genres,
       error: "",
-      formData: buildEmptySongFormData(playlistId)
+      formData: formData,
+      spotifyQuery: spotifyQuery,
+      spotifyResults: spotifyResults,
+      spotifyError: spotifyError,
+      artistInsight: artistInsight
     });
   } catch (error) {
     console.error(error);
@@ -185,8 +420,20 @@ async function showAddSongForm(req, res) {
       title: "Add Song",
       user: req.session.user,
       playlists: [],
+      genres: defaultGenres,
       error: "Something went wrong.",
-      formData: buildEmptySongFormData(playlistId)
+      formData: {
+        songId: "",
+        playlistId: playlistId,
+        title: selectedTitle,
+        artist: selectedArtist,
+        album: selectedAlbum,
+        genre: ""
+      },
+      spotifyQuery: spotifyQuery,
+      spotifyResults: [],
+      spotifyError: "",
+      artistInsight: null
     });
   }
 }
@@ -199,6 +446,7 @@ async function createSong(req, res) {
   const title = (req.body.title || "").trim();
   const artist = (req.body.artist || "").trim();
   const album = (req.body.album || "").trim();
+  const genre = (req.body.genre || "").trim();
 
   // Keep a copy of the submitted values so the form can be re-rendered safely on error.
   const formData = {
@@ -206,11 +454,13 @@ async function createSong(req, res) {
     playlistId: playlistId,
     title: title,
     artist: artist,
-    album: album
+    album: album,
+    genre: genre
   };
 
   try {
     const playlists = await loadUserPlaylists(req.session.user.id);
+    const genres = await loadGenreNames(req.session.user.id, genre);
     const selectedPlaylist = findPlaylistById(playlists, playlistId);
 
     // Check that the user selected a valid playlist from their own playlist list.
@@ -220,19 +470,29 @@ async function createSong(req, res) {
         title: "Add Song",
         user: req.session.user,
         playlists: playlists,
+        genres: genres,
         error: "Playlist not found.",
-        formData: formData
+        formData: formData,
+        spotifyQuery: "",
+        spotifyResults: [],
+        spotifyError: "",
+        artistInsight: null
       });
     }
 
     // Title, artist, and album are required for every song.
-    if (!title || !artist || !album) {
+    if (!title || !artist || !album || !genre) {
       return res.render("add-song", {
         title: "Add Song",
         user: req.session.user,
         playlists: playlists,
-        error: "Title, artist, and album are required.",
-        formData: formData
+        genres: genres,
+        error: "Title, artist, album, and genre are required.",
+        formData: formData,
+        spotifyQuery: "",
+        spotifyResults: [],
+        spotifyError: "",
+        artistInsight: null
       });
     }
 
@@ -242,7 +502,8 @@ async function createSong(req, res) {
       playlistId: playlistId,
       title: title,
       artist: artist,
-      album: album
+      album: album,
+      genre: genre
     };
 
     // Save the song in MongoDB.
@@ -257,8 +518,13 @@ async function createSong(req, res) {
       title: "Add Song",
       user: req.session.user,
       playlists: await loadUserPlaylists(req.session.user.id),
+      genres: await loadGenreNames(req.session.user.id, genre),
       error: "Something went wrong.",
-      formData: formData
+      formData: formData,
+      spotifyQuery: "",
+      spotifyResults: [],
+      spotifyError: "",
+      artistInsight: null
     });
   }
 }
@@ -270,6 +536,7 @@ async function showEditSongForm(req, res) {
 
   try {
     const playlists = await loadUserPlaylists(req.session.user.id);
+    const genres = await loadGenreNames(req.session.user.id, "");
 
     // Check whether a song ID was provided.
     if (!songId) {
@@ -277,6 +544,7 @@ async function showEditSongForm(req, res) {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
+        genres: genres,
         error: "Song not found.",
         formData: buildEmptySongFormData("")
       });
@@ -290,6 +558,7 @@ async function showEditSongForm(req, res) {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
+        genres: genres,
         error: "Song not found.",
         formData: buildEmptySongFormData("")
       });
@@ -304,6 +573,7 @@ async function showEditSongForm(req, res) {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
+        genres: genres,
         error: "Song not found.",
         formData: buildEmptySongFormData("")
       });
@@ -314,13 +584,15 @@ async function showEditSongForm(req, res) {
       title: "Edit Song",
       user: req.session.user,
       playlists: playlists,
+      genres: await loadGenreNames(req.session.user.id, song.genre),
       error: "",
       formData: {
         songId: song._id,
         playlistId: String(song.playlistId),
         title: song.title,
         artist: song.artist,
-        album: song.album
+        album: song.album,
+        genre: song.genre || ""
       }
     });
   } catch (error) {
@@ -330,6 +602,7 @@ async function showEditSongForm(req, res) {
       title: "Edit Song",
       user: req.session.user,
       playlists: await loadUserPlaylists(req.session.user.id),
+      genres: defaultGenres,
       error: "Something went wrong.",
       formData: buildEmptySongFormData("")
     });
@@ -345,6 +618,7 @@ async function editSong(req, res) {
   const title = (req.body.title || "").trim();
   const artist = (req.body.artist || "").trim();
   const album = (req.body.album || "").trim();
+  const genre = (req.body.genre || "").trim();
 
   // Keep a copy of the submitted values so the form can be shown again after an error.
   const formData = {
@@ -352,11 +626,13 @@ async function editSong(req, res) {
     playlistId: playlistId,
     title: title,
     artist: artist,
-    album: album
+    album: album,
+    genre: genre
   };
 
   try {
     const playlists = await loadUserPlaylists(req.session.user.id);
+    const genres = await loadGenreNames(req.session.user.id, genre);
     const selectedPlaylist = findPlaylistById(playlists, playlistId);
     const existingSong = await songModel.getSongById(songId);
 
@@ -366,6 +642,7 @@ async function editSong(req, res) {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
+        genres: genres,
         error: "Song not found.",
         formData: formData
       });
@@ -380,6 +657,7 @@ async function editSong(req, res) {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
+        genres: genres,
         error: "Song not found.",
         formData: formData
       });
@@ -392,18 +670,20 @@ async function editSong(req, res) {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
+        genres: genres,
         error: "Playlist not found.",
         formData: formData
       });
     }
 
     // Title, artist, and album are required.
-    if (!title || !artist || !album) {
+    if (!title || !artist || !album || !genre) {
       return res.render("edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
-        error: "Title, artist, and album are required.",
+        genres: genres,
+        error: "Title, artist, album, and genre are required.",
         formData: formData
       });
     }
@@ -413,7 +693,8 @@ async function editSong(req, res) {
       playlistId: playlistId,
       title: title,
       artist: artist,
-      album: album
+      album: album,
+      genre: genre
     };
 
     // Save the updated song in MongoDB.
@@ -428,6 +709,7 @@ async function editSong(req, res) {
       title: "Edit Song",
       user: req.session.user,
       playlists: await loadUserPlaylists(req.session.user.id),
+      genres: await loadGenreNames(req.session.user.id, genre),
       error: "Something went wrong.",
       formData: formData
     });
@@ -449,6 +731,8 @@ async function deleteSong(req, res) {
         title: "All Songs",
         user: req.session.user,
         songs: songs,
+        genres: defaultGenres,
+        selectedGenre: "",
         error: "Song not found."
       });
     }
@@ -465,6 +749,8 @@ async function deleteSong(req, res) {
         title: "All Songs",
         user: req.session.user,
         songs: songs,
+        genres: defaultGenres,
+        selectedGenre: "",
         error: "Song not found."
       });
     }
@@ -485,6 +771,8 @@ async function deleteSong(req, res) {
       title: "All Songs",
       user: req.session.user,
       songs: [],
+      genres: defaultGenres,
+      selectedGenre: "",
       error: "Something went wrong."
     });
   }

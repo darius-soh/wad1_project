@@ -13,7 +13,7 @@
 <!-- Song details -->
 <!-- This page shows one selected song and links back to related actions -->
 <% if (song) { %>
-  <form action="/songs/delete" method="POST" onsubmit="return confirm('Delete <%= song.title %>?');">
+  <form action="/songs/delete" method="POST">
     <input type="hidden" name="songId" value="<%= song._id %>">
     <button type="submit">Delete Song</button>
   </form>
@@ -25,6 +25,7 @@
   <h2><%= song.title %></h2>
   <p><strong>Artist:</strong> <%= song.artist %></p>
   <p><strong>Album:</strong> <%= song.album %></p>
+  <p><strong>Genre:</strong> <%= song.genre %></p>
   <p><strong>Playlist:</strong> <a href="/playlists/view?id=<%= playlist._id %>"><%= playlist.name %></a></p>
   <p><strong>Created:</strong> <%= song.createdAt.toLocaleString() %></p>
 <% } %>
