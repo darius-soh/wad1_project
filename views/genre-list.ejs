@@ -1,0 +1,59 @@
+<%- include("common/header", { title: title, user: user }) %>
+
+<!-- Page heading -->
+<table width="100%">
+  <tr>
+    <td>
+      <h1>All Genres</h1>
+    </td>
+    <td align="right">
+      <a href="/genres/add">
+        <button type="button">Add a genre</button>
+      </a>
+    </td>
+  </tr>
+</table>
+<hr>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p><%= error %></p>
+<% } %>
+
+<!-- Message when there are no genres -->
+<% if (!genres || genres.length === 0) { %>
+  <p>No genres found.</p>
+<% } %>
+
+<!-- Genres table -->
+<!-- Each row shows one saved genre and the actions available for it -->
+<% if (genres && genres.length > 0) { %>
+  <table width="100%" border="1">
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Created</th>
+      <th>Action</th>
+    </tr>
+
+    <% for (const genre of genres) { %>
+      <tr align="center">
+        <td><%= genre.name %></td>
+        <td><%= genre.description %></td>
+        <td><%= genre.createdAt.toLocaleString() %></td>
+        <td>
+          <a href="/genres/edit?genreId=<%= genre._id %>">Edit</a>
+          <br>
+          <form action="/genres/delete" method="POST" onsubmit="return confirm('Delete <%= genre.name %>?');">
+            <input type="hidden" name="genreId" value="<%= genre._id %>">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% } %>
+  </table>
+<% } %>
+
+</main>
+</body>
+</html>

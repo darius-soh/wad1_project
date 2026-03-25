@@ -1,0 +1,65 @@
+<%- include("common/header", { title: title, user: user }) %>
+
+<!-- Page heading -->
+<table width="100%">
+  <tr>
+    <td>
+      <h1>All Songs</h1>
+    </td>
+    <td align="right">
+      <a href="/songs/add">
+        <button type="button">Add a song</button>
+      </a>
+    </td>
+  </tr>
+</table>
+<hr>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p><%= error %></p>
+<% } %>
+
+<!-- Message when there are no songs -->
+<% if (!songs || songs.length === 0) { %>
+  <p>No songs found.</p>
+<% } %>
+
+<!-- Songs table -->
+<!-- Each row shows one song and the playlist that song belongs to -->
+<% if (songs && songs.length > 0) { %>
+  <table width="100%" border="1">
+    <tr>
+      <th>Title</th>
+      <th>Artist</th>
+      <th>Album</th>
+      <th>Playlist</th>
+      <th>Action</th>
+    </tr>
+
+    <% for (const song of songs) { %>
+      <tr align="center">
+        <td><%= song.title %></td>
+        <td><%= song.artist %></td>
+        <td><%= song.album %></td>
+        <td><%= song.playlistName %></td>
+        <td>
+          <a href="/songs/view?id=<%= song._id %>">View</a>
+          <br>
+          <a href="/songs/edit?songId=<%= song._id %>">Edit</a>
+          <br>
+          <a href="/reviews/add?songId=<%= song._id %>">Add Review</a>
+          <br>
+          <form action="/songs/delete" method="POST" onsubmit="return confirm('Delete <%= song.title %>?');">
+            <input type="hidden" name="songId" value="<%= song._id %>">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% } %>
+  </table>
+<% } %>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<%- include("common/header", { title: title, user: user }) %>
+
+<!-- Page heading -->
+<h2>Edit Genre</h2>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p><%= error %></p>
+<% } %>
+
+<!-- Edit genre form -->
+<!-- The hidden genreId tells the controller which genre document to update -->
+<form action="/genres/edit" method="POST">
+  <input type="hidden" name="genreId" value="<%= formData.genreId %>">
+
+  <label for="name">Genre Name</label>
+  <br>
+  <input id="name" name="name" type="text" value="<%= formData.name %>">
+  <br><br>
+
+  <label for="description">Description</label>
+  <br>
+  <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
+  <br><br>
+
+  <button type="submit">Save Changes</button>
+</form>
+
+</main>
+</body>
+</html>

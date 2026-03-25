@@ -1,0 +1,29 @@
+<%- include("common/header", { title: title, user: user }) %>
+
+<!-- Page heading -->
+<h2>Add Genre</h2>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p><%= error %></p>
+<% } %>
+
+<!-- Add genre form -->
+<!-- Submitting this form creates a new genre document in MongoDB -->
+<form action="/genres/add" method="POST">
+  <label for="name">Genre Name</label>
+  <br>
+  <input id="name" name="name" type="text" value="<%= formData.name %>">
+  <br><br>
+
+  <label for="description">Description</label>
+  <br>
+  <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
+  <br><br>
+
+  <button type="submit">Save Genre</button>
+</form>
+
+</main>
+</body>
+</html>

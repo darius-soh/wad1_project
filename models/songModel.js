@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-// Define the structure of a song document.
+// Define the fields that every song document should store in MongoDB.
+// Mongoose uses this schema as the blueprint for validation and saved structure.
 const songSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -13,14 +14,6 @@ const songSchema = new mongoose.Schema({
   album: {
     type: String,
     required: true
-  },
-  rating: {
-    type: Number,
-    min: 1,
-    max: 5
-  },
-  review: {
-    type: String
   },
   playlistId: {
 // type: mongoose.Schema.Types.ObjectId
@@ -41,24 +34,35 @@ const songSchema = new mongoose.Schema({
 });
 
 // Create the Song model from the schema.
+// This model gives us helper methods such as find(), create(), update(), and delete().
 const Song = mongoose.model("Song", songSchema);
 
-// Return all songs belonging to a specific playlist.
+// Find all songs whose playlistId matches one playlist.
+// Controllers use this when they need songs linked to a selected playlist.
 function getSongsByPlaylistId(playlistId) {
   return Song.find({ playlistId: playlistId });
 }
 
-// Return a single song by its MongoDB ID.
+// Find one song document by its MongoDB _id value.
+// This is used before showing, editing, or deleting a specific song.
 function getSongById(id) {
   return Song.findById(id);
 }
 
-// Insert a new song document.
+// Create and insert one new song document into MongoDB.
+// The controller builds the data object and passes it into this function.
 function createSong(data) {
   return Song.create(data);
 }
 
-// Delete a song by its MongoDB ID.
+// Find one song by ID and update the fields we pass in the data object.
+// This updates the saved document instead of creating a new one.
+function updateSongById(id, data) {
+  return Song.findByIdAndUpdate(id, data);
+}
+
+// Find one song by ID and remove it from MongoDB.
+// After this runs, the song document no longer exists in the collection.
 function deleteSongById(id) {
   return Song.findByIdAndDelete(id);
 }
@@ -67,5 +71,6 @@ module.exports = {
   getSongsByPlaylistId: getSongsByPlaylistId,
   getSongById: getSongById,
   createSong: createSong,
+  updateSongById: updateSongById,
   deleteSongById: deleteSongById
 };

@@ -1,0 +1,54 @@
+<%- include("common/header", { title: title, user: user }) %>
+
+<!-- Page heading -->
+<h2>Add Review</h2>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p><%= error %></p>
+<% } %>
+
+<!-- Back link if there are no songs -->
+<% if (!songs || songs.length === 0) { %>
+  <p>No songs found. <a href="/songs/add">Create a song first</a></p>
+<% } %>
+
+<!-- Add review form -->
+<!-- The song dropdown decides which song this new review should belong to -->
+<% if (songs && songs.length > 0) { %>
+  <form action="/reviews/add" method="POST">
+    <label for="songId">Song</label>
+    <br>
+    <select id="songId" name="songId">
+      <option value="">--Select a Song--</option>
+
+      <% for (const song of songs) { %>
+        <option value="<%= song._id %>" <%= formData.songId === String(song._id) ? "selected" : "" %>>
+          <%= song.title %> (<%= song.playlistName %>)
+        </option>
+      <% } %>
+    </select>
+    <br><br>
+
+    <label for="title">Review Title</label>
+    <br>
+    <input id="title" name="title" type="text" value="<%= formData.title %>">
+    <br><br>
+
+    <label for="comment">Comment</label>
+    <br>
+    <textarea id="comment" name="comment" rows="4"><%= formData.comment %></textarea>
+    <br><br>
+
+    <label for="rating">Rating (1 to 5)</label>
+    <br>
+    <input id="rating" name="rating" type="number" min="1" max="5" value="<%= formData.rating %>">
+    <br><br>
+
+    <button type="submit">Save Review</button>
+  </form>
+<% } %>
+
+</main>
+</body>
+</html>

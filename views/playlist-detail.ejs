@@ -1,8 +1,8 @@
-<%- include("common/header", { title: title }) %>
+<%- include("common/header", { title: title, user: user }) %>
 
 <!-- Error message -->
 <% if (error) { %>
-  <p class="error"><%= error %></p>
+  <p><%= error %></p>
 <% } %>
 
 <!-- Back link if playlist is missing -->
@@ -11,45 +11,41 @@
 <% } %>
 
 <!-- Playlist details -->
+<!-- This page shows one playlist together with all songs linked to it -->
 <% if (playlist) { %>
-  <form action="/playlists/delete" method="POST" class="inline-form" style="float: right; margin-top: 0;" onsubmit="return confirm('Delete <%= playlist.name %>?');">
-    <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
-    <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
-    <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-    <button type="submit" class="icon-button delete-button">
-      <img src="/images/delete.png" alt="Delete" width="20">
-    </button>
-  </form>
+  <h2><%= playlist.name %></h2>
+  <br>
 
-  <form action="/playlists/edit" method="GET" class="inline-form" style="float: right; margin-top: 0; margin-right: 8px;">
+  <form action="/playlists/edit" method="GET">
     <input type="hidden" name="playlistId" value="<%= playlist._id %>">
-    <button type="submit" class="icon-button">
+    <button type="submit">
       <img src="/images/edit.png" alt="Edit" width="20">
     </button>
   </form>
+  <br>
 
-  <h2><%= playlist.name %></h2>
+  <form action="/playlists/delete" method="POST" onsubmit="return confirm('Delete <%= playlist.name %>?');">
+    <!-- We have to use the hidden variable so that when we process the post request, we are able to get the id  -->
+    <!-- MongoDB automatically creates a field called _id for every document, so we will use that to get the unique ID of that document -->
+    <input type="hidden" name="playlistId" value="<%= playlist._id %>">
+    <button type="submit">
+      <img src="/images/delete.png" alt="Delete" width="20">
+    </button>
+  </form>
+  <br>
   <p><strong>Description:</strong> <%= playlist.description %></p>
   <p><strong>Genre:</strong> <%= playlist.genre %></p>
-  <p>
-    <strong>Rating:</strong>
-    <% if (playlist.rating) { %>
-      <%= playlist.rating %>/5
-    <% } else { %>
-      -
-    <% } %>
-  </p>
   <p><strong>Created:</strong> <%= playlist.createdAt.toLocaleString() %></p>
 
    <!-- Horizontal line separating playlist from songs -->
   <hr>
   
   <h3>Songs</h3>
-  <p><a href="/playlists/songs/add?id=<%= playlist._id %>">Add Song</a></p>
+  <p><a href="/songs/add?playlistId=<%= playlist._id %>">Add Song</a></p>
 
 
   <!-- Message when there are no songs -->
-  <% if (!songs.length) { %>
+  <% if (!songs || songs.length === 0) { %>
     <% if (searchTerm) { %>
       <p>No matching songs found.</p>
     <% } else { %>
@@ -60,19 +56,19 @@
   <form action="/playlists/view" method="GET">
     <input type="hidden" name="id" value="<%= playlist._id %>">
     <label for="search">Search for a song:</label>
-    <input type="text" id="search" name="search" value="<%= searchTerm %>" placeholder="Search song title" style="width:  250px; height: 10px;">
+    <br>
+    <input type="text" id="search" name="search" value="<%= searchTerm %>" placeholder="Search song title">
+    <br><br>
     <button type="submit">Search</button><br><br>
   </form>
 
 
-  <% if (songs.length) { %>
+  <% if (songs && songs.length > 0) { %>
     <table width="100%" border="1">
       <tr>
         <th>Title</th>
         <th>Artist</th>
         <th>Album</th>
-        <th>Rating</th>
-        <th>Review</th>
         <th>Added</th>
         <th>Action</th>
       </tr>
@@ -82,25 +78,18 @@
           <td><%= song.title %></td>
           <td><%= song.artist %></td>
           <td><%= song.album %></td>
-          <td>
-            <% if (song.rating) { %>
-              <%= song.rating %>/5
-            <% } else { %>
-              -
-            <% } %>
-          </td>
-          <td>
-            <% if (song.review) { %>
-              <%= song.review %>
-            <% } else { %>
-              -
-            <% } %>
-          </td>
           <td><%= song.createdAt.toLocaleString() %></td>
           <td>
-            <a href="/playlists/songs/delete?playlistId=<%= playlist._id %>&songId=<%= song._id %>" onclick="return confirm('Delete <%= song.title %>?');">
-              Delete Song
-            </a>
+            <a href="/songs/view?id=<%= song._id %>">View</a>
+            <br>
+            <a href="/songs/edit?songId=<%= song._id %>">Edit</a>
+            <br>
+            <a href="/reviews/add?songId=<%= song._id %>">Add Review</a>
+            <br>
+            <form action="/songs/delete" method="POST" onsubmit="return confirm('Delete <%= song.title %>?');">
+              <input type="hidden" name="songId" value="<%= song._id %>">
+              <button type="submit">Delete</button>
+            </form>
           </td>
         </tr>
       <% } %>

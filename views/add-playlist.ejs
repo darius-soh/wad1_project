@@ -1,23 +1,27 @@
-<%- include("common/header", { title: title }) %>
+<%- include("common/header", { title: title, user: user }) %>
 
 <!-- Page heading -->
 <h2>Add Playlist</h2>
 
-<!-- Error message -->
 <% if (error) { %>
-<!-- class error is for the CSS in the common header page -->
-  <p class="error"><%= error %></p>
+  <p><%= error %></p>
 <% } %>
 
 <!-- Add playlist form -->
+<!-- Submitting this form sends a POST request to /playlists/add -->
 <form action="/playlists/add" method="POST">
   <label for="name">Playlist Name</label>
+  <br>
   <input id="name" name="name" type="text" value="<%= formData.name %>">
+  <br><br>
 
   <label for="description">Description</label>
+  <br>
   <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
+  <br><br>
 
   <label for="genre">Genre</label>
+  <br>
   <!--Making dropdown for genres-->
   <select id="genre" name="genre">
     <option value="" disabled <%= !formData.genre ? "selected" : "" %>>--Select a Genre--</option>
@@ -28,9 +32,6 @@
       </option>
     <% }); %>
   </select>
-
-  <label for="rating">Rating (1 to 5)</label>
-  <input id="rating" name="rating" type="number" min="1" max="5" value="<%= formData.rating %>">
   <br><br>
   <button type="submit" >Save Playlist</button>
 </form>

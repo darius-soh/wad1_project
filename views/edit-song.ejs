@@ -1,8 +1,9 @@
 <%- include("common/header", { title: title, user: user }) %>
 
 <!-- Page heading -->
-<h2>Add Song</h2>
+<h2>Edit Song</h2>
 
+<!-- Error message -->
 <% if (error) { %>
   <p><%= error %></p>
 <% } %>
@@ -12,10 +13,13 @@
   <p>No playlists found. <a href="/playlists/add">Create a playlist first</a></p>
 <% } %>
 
-<!-- Add song form -->
-<!-- The playlist dropdown decides which playlist this new song should belong to -->
+<!-- Edit song form -->
+<!-- The hidden songId tells the controller which song document to update -->
 <% if (playlists && playlists.length > 0) { %>
-  <form action="/songs/add" method="POST">
+  <form action="/songs/edit" method="POST">
+    <!-- Hidden field so the controller knows which song to update -->
+    <input type="hidden" name="songId" value="<%= formData.songId %>">
+
     <label for="playlistId">Playlist</label>
     <br>
     <select id="playlistId" name="playlistId">
@@ -44,7 +48,7 @@
     <input id="album" name="album" type="text" value="<%= formData.album %>">
     <br><br>
 
-    <button type="submit">Save Song</button>
+    <button type="submit">Save Changes</button>
   </form>
 <% } %>
 

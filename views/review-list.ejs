@@ -1,0 +1,63 @@
+<%- include("common/header", { title: title, user: user }) %>
+
+<!-- Page heading -->
+<table width="100%">
+  <tr>
+    <td>
+      <h1>All Reviews</h1>
+    </td>
+    <td align="right">
+      <a href="/reviews/add">
+        <button type="button">Add a review</button>
+      </a>
+    </td>
+  </tr>
+</table>
+<hr>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p><%= error %></p>
+<% } %>
+
+<!-- Message when there are no reviews -->
+<% if (!reviews || reviews.length === 0) { %>
+  <p>No reviews found.</p>
+<% } %>
+
+<!-- Reviews table -->
+<!-- Each row shows one review together with its related song and playlist names -->
+<% if (reviews && reviews.length > 0) { %>
+  <table width="100%" border="1">
+    <tr>
+      <th>Title</th>
+      <th>Song</th>
+      <th>Playlist</th>
+      <th>Rating</th>
+      <th>Comment</th>
+      <th>Action</th>
+    </tr>
+
+    <% for (const review of reviews) { %>
+      <tr align="center">
+        <td><%= review.title %></td>
+        <td><%= review.songTitle %></td>
+        <td><%= review.playlistName %></td>
+        <td><%= review.rating %>/5</td>
+        <td><%= review.comment %></td>
+        <td>
+          <a href="/reviews/edit?reviewId=<%= review._id %>">Edit</a>
+          <br>
+          <form action="/reviews/delete" method="POST" onsubmit="return confirm('Delete <%= review.title %>?');">
+            <input type="hidden" name="reviewId" value="<%= review._id %>">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% } %>
+  </table>
+<% } %>
+
+</main>
+</body>
+</html>

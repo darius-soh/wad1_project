@@ -1,8 +1,9 @@
 <%- include("common/header", { title: title, user: user }) %>
 
 <!-- Page heading -->
-<h2>Add Song</h2>
+<h2>Edit Tag</h2>
 
+<!-- Error message -->
 <% if (error) { %>
   <p><%= error %></p>
 <% } %>
@@ -12,10 +13,12 @@
   <p>No playlists found. <a href="/playlists/add">Create a playlist first</a></p>
 <% } %>
 
-<!-- Add song form -->
-<!-- The playlist dropdown decides which playlist this new song should belong to -->
+<!-- Edit tag form -->
+<!-- The hidden tagId tells the controller which tag document to update -->
 <% if (playlists && playlists.length > 0) { %>
-  <form action="/songs/add" method="POST">
+  <form action="/tags/edit" method="POST">
+    <input type="hidden" name="tagId" value="<%= formData.tagId %>">
+
     <label for="playlistId">Playlist</label>
     <br>
     <select id="playlistId" name="playlistId">
@@ -29,22 +32,17 @@
     </select>
     <br><br>
 
-    <label for="title">Song Title</label>
+    <label for="name">Tag Name</label>
     <br>
-    <input id="title" name="title" type="text" value="<%= formData.title %>">
+    <input id="name" name="name" type="text" value="<%= formData.name %>">
     <br><br>
 
-    <label for="artist">Artist</label>
+    <label for="description">Description</label>
     <br>
-    <input id="artist" name="artist" type="text" value="<%= formData.artist %>">
+    <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
     <br><br>
 
-    <label for="album">Album</label>
-    <br>
-    <input id="album" name="album" type="text" value="<%= formData.album %>">
-    <br><br>
-
-    <button type="submit">Save Song</button>
+    <button type="submit">Save Changes</button>
   </form>
 <% } %>
 

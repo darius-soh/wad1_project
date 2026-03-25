@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const bcrypt = require('bcrypt');
 
-// Define the structure of a user document.
+// Define the fields that every user document should store in MongoDB.
+// Mongoose uses this schema as the blueprint for validation and saved structure.
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -20,24 +21,35 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// Create the User model from the schema.
+// This model gives us helper methods such as findOne(), create(), and updateOne().
 const User = mongoose.model("User", userSchema);
 
-// Return a single user by their username.
+// Find one user document by username.
+// The login and registration flow uses this to check whether the user exists.
 function getUserByUsername(username) {
-  return User.findOne({ username: username });
+  return User.findOne({
+    username: username
+  });
 }
 
-// Insert a new user document.
-async function createUser (username, password){
-    const passwordHash = await bcrypt.hash(password, 10);
-    return User.create({username, passwordHash});
+// Hash the submitted password and create one new user document in MongoDB.
+// Storing passwordHash is safer than storing the original password itself.
+async function createUser(username, password) {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  return User.create({
+    username: username,
+    passwordHash: passwordHash
+  });
 }
 
-// Validate password to fit requirement.
-function isValidPassword(password){
+// Check whether the submitted password follows the project's rules.
+// Keeping the validation here makes the same rules reusable in the controller.
+function isValidPassword(password) {
 
   // Ensures password is at least 8 characters long.
-  if (password.length<8){
+  if (password.length < 8) {
     return false;
   }
 
@@ -47,28 +59,44 @@ function isValidPassword(password){
   let hasDigit = false;
   let hasSymbol = false;
 
-  for (let char of password){
+  for (let char of password) {
 
     // Check if lowercase letter is present using unicode value.
-    if (char >= "a" && char <= "z") hasLower = true;
+    if (char >= "a" && char <= "z") {
+      hasLower = true;
+    }
 
     // Check if uppercase letter is present using unicode value.
-    else if (char >= "A" && char <= "Z") hasUpper = true;
+    else if (char >= "A" && char <= "Z") {
+      hasUpper = true;
+    }
 
     // Check if digit is present using unicode value.
-    else if (char >= "0" && char <= "9") hasDigit = true;
+    else if (char >= "0" && char <= "9") {
+      hasDigit = true;
+    }
 
     // Check if symbol is present.
-    else if ("@!#$%^&*".includes(char)) hasSymbol = true;
+    else if ("@!#$%^&*".includes(char)) {
+      hasSymbol = true;
+    }
   }
 
   // Return true if password match all conditions.
   return hasLower && hasUpper && hasDigit && hasSymbol;
 }
 
-// Change password. 
-function changePassword(username, passwordHash){
-    return User.updateOne({username:username}, {passwordHash:passwordHash})
+// Update the saved password hash for one user.
+// The controller already creates the new hash before calling this function.
+function changePassword(username, passwordHash) {
+  return User.updateOne(
+    {
+      username: username
+    },
+    {
+      passwordHash: passwordHash
+    }
+  );
 }
 
 module.exports = {

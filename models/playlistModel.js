@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-// Define the structure of a playlist document 
+// Define the fields that every playlist document should store in MongoDB.
+// Mongoose uses this schema as the blueprint for validation and saved structure.
 const playlistSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -13,11 +14,6 @@ const playlistSchema = new mongoose.Schema({
     genre: {
         type: String,
         required: true
-    },
-    rating: {
-        type: Number,
-        min: 1,
-        max: 5
     },
     createdAt: {
         type: Date,
@@ -38,7 +34,8 @@ const playlistSchema = new mongoose.Schema({
     }
 });
 
-// Create the Playlist model from the schema 
+// Create the Playlist model from the schema.
+// This model gives us helper methods such as find(), create(), update(), and delete().
 const Playlist = mongoose.model("Playlist", playlistSchema);
 
 // Moving onto our Model functions
@@ -47,20 +44,18 @@ const Playlist = mongoose.model("Playlist", playlistSchema);
 // Playlist.find({ userId: userId })
 // The find() method in Mongoose queries the Playlist collection for all documents
 // where the userId field matches the given userId.
-// It returns a Mongoose Query object, which 
-// supports chaining additional operations like sorting, limiting, and filtering.
 function getAllPlaylists(userId) {
     return Playlist.find({userId: userId}); 
 }
 
-// Return a single playlist by its MongoDB ID.
+// Find one playlist document by its MongoDB _id value.
+// The controller uses this before showing, editing, or deleting one playlist.
 function getPlaylistById(id) {
     return Playlist.findById(id);
 }
 
-// Insert a new playlist document 
-// We use it to create a document in 
-// the database using the Model.create()
+// Create and insert one new playlist document into MongoDB.
+// The controller prepares the data object and passes it into this function.
 function createPlaylist(data) {
     return Playlist.create(data); 
 }
@@ -72,7 +67,8 @@ function deletePlaylistById(id) {
     return Playlist.findByIdAndDelete(id); 
 }
 
-// Edit a playlist by its MongoDB ID
+// Find one playlist by ID and update the fields we pass in the data object.
+// This changes the saved document instead of creating a new one.
 function updatePlaylistById(id, data) {
     return Playlist.findByIdAndUpdate(id, data)
 }

@@ -1,21 +1,28 @@
-<%- include("common/header", { title: title }) %>
+<%- include("common/header", { title: title, user: user }) %>
 
 <h2>Edit Playlist</h2>
 
 <% if (error) { %>
-  <p class="error"><%= error %></p>
+  <p><%= error %></p>
 <% } %>
 
+<!-- Edit playlist form -->
+<!-- The hidden playlistId tells the controller which playlist document to update -->
 <form action="/playlists/edit" method="POST">
   <input type="hidden" name="playlistId" value="<%= formData.playlistId %>">
 
   <label for="name">Playlist Name</label>
+  <br>
   <input id="name" name="name" type="text" value="<%= formData.name %>">
+  <br><br>
 
   <label for="description">Description</label>
+  <br>
   <textarea id="description" name="description" rows="4"><%= formData.description %></textarea>
+  <br><br>
 
   <label for="genre">Genre</label>
+  <br>
   <select id="genre" name="genre">
     <option value="" disabled <%= !formData.genre ? "selected" : "" %>>
       --Select a Genre--
@@ -27,14 +34,13 @@
       </option>
     <% }); %>
   </select>
-
-  <label for="rating">Rating (1 to 5)</label>
-  <input id="rating" name="rating" type="number" min="1" max="5" value="<%= formData.rating %>">
+  <br><br>
 
   <label for="createdAt">Created</label>
+  <br>
   <input id="createdAt" name="createdAt" type="datetime-local" step="1" value="<%= formData.createdAt %>">
   <br><br>
-  <button type="submit" class="action-button">Save Changes</button>
+  <button type="submit">Save Changes</button>
 </form>
 
 </main>

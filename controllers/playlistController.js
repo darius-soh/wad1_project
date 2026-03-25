@@ -1,123 +1,201 @@
 const playlistModel = require("../models/playlistModel");
 const songModel = require("../models/songModel");
+const genreModel = require("../models/genreModel");
+const reviewModel = require("../models/reviewModel");
+const tagModel = require("../models/tagModel");
 
-// Define the genres.
-const genres = ["Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "Lo-fi", "R&B"]
+// Default genres to show before the user creates custom genres.
+// These act as starter values even if the user has not created any genre documents yet.
+const defaultGenres = ["Pop", "Rock", "Hip-Hop", "Jazz", "Classical", "Lo-fi", "R&B"];
 
-// Show all playlists.
+// Build the list of genre names for playlist forms and filters.
+// This merges the built-in default genres with any custom genres created by the user.
+async function loadGenreNames(userId, extraGenre) {
+  const savedGenres = await genreModel.getAllGenres(userId);
+  const genreNames = [];
+
+  // Add all default genres first.
+  // These are always available even if the Genre collection is empty.
+  for (const genreName of defaultGenres) {
+    genreNames.push(genreName);
+  }
+
+  // Add custom genres only if the name is not already inside the list.
+  // This avoids duplicate options appearing in the playlist dropdown.
+  for (const genre of savedGenres) {
+    let exists = false;
+
+    for (const existingGenreName of genreNames) {
+      if (existingGenreName === genre.name) {
+        exists = true;
+      }
+    }
+
+    if (!exists) {
+      genreNames.push(genre.name);
+    }
+  }
+
+  // Add the current playlist genre too if it is not already in the list.
+  // This helps the edit form show the saved value even if it is not in the defaults.
+  if (extraGenre) {
+    let exists = false;
+
+    for (const existingGenreName of genreNames) {
+      if (existingGenreName === extraGenre) {
+        exists = true;
+      }
+    }
+
+    if (!exists) {
+      genreNames.push(extraGenre);
+    }
+  }
+
+  return genreNames;
+}
+
+// Sort playlists using simple comparisons taught in school.
+// Each branch changes the same array in place before it is rendered.
+function sortPlaylists(playlists, sortType) {
+  if (sortType === "A-Z") {
+    playlists.sort(function (a, b) {
+      if (a.name < b.name) {
+        return -1;
+      }
+
+      if (a.name > b.name) {
+        return 1;
+      }
+
+      return 0;
+    });
+  } else if (sortType === "Z-A") {
+    playlists.sort(function (a, b) {
+      if (a.name < b.name) {
+        return 1;
+      }
+
+      if (a.name > b.name) {
+        return -1;
+      }
+
+      return 0;
+    });
+  }
+}
+
+// Show all playlists for the logged-in user.
+// The controller can also filter by genre and sort the list before rendering the page.
 async function listPlaylists(req, res) {
+  // Read filter and sort choices from the URL query string.
   const selectedGenre = (req.query.genre || "").trim();
+  const sortType = (req.query.sortType || "").trim();
 
   try {
     // Load every playlist from the database for that user.
     let playlists = await playlistModel.getAllPlaylists(req.session.user.id);
+    const genres = await loadGenreNames(req.session.user.id, selectedGenre);
 
-    // If a genre was selected, only keep playlists from that genre
+    // If a genre was selected, only keep playlists from that genre.
     if (selectedGenre) {
-      playlists = playlists.filter(p => p.genre === selectedGenre);
+      playlists = playlists.filter(function (playlist) {
+        return playlist.genre === selectedGenre;
+      });
     }
 
-    // If sort wwas selected, sorts by request
-    const sortType = (req.query.sortType || "").trim();
-
-    if (sortType === "A-Z") {
-      playlists.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortType === "Z-A") {
-      playlists.sort((a, b) => b.name.localeCompare(a.name));
-    } else if (sortType === "RatingUp"){
-      playlists.sort((a, b) => (a.rating || 0) - (b.rating || 0))
-    } else if (sortType === "RatingDown"){
-      playlists.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-    }
+    // Sort the playlists only when the user selected a sort type.
+    sortPlaylists(playlists, sortType);
 
     // Send the playlists to the list page.
     return res.render("playlist-list", {
       title: "All Playlists",
-      // include user so that the header will be visible
-      user: req.session.user, 
+      user: req.session.user,
       playlists: playlists,
       genres: genres,
       selectedGenre: selectedGenre,
+      sortType: sortType,
       error: ""
-    })
-;
+    });
   } catch (error) {
     console.error(error);
+
     return res.render("playlist-list", {
       title: "All Playlists",
-      user: req.session.user, 
-      // If there is an error in the playlists, send an empty array
+      user: req.session.user,
       playlists: [],
-      genres: genres,
+      genres: defaultGenres,
       selectedGenre: selectedGenre,
-      // error message will be "Something went wrong"
+      sortType: sortType,
       error: "Something went wrong."
     });
-}}
-
-// Show the add playlist page.
-function showAddPlaylistForm(req, res) {
-  // Show an empty form when the page first loads.
-  return res.render("add-playlist", {
-    title: "Add Playlist",
-    user: req.session.user, 
-    error: "",
-    genres: genres, // Pass the list to the view
-    formData: {
-      name: "",
-      description: "",
-      genre: "",
-      rating: ""
-    }
-  });
+  }
 }
 
-// Save a new playlist.
+// Show the add playlist page.
+// We load the available genre names so the form can show them in a dropdown.
+async function showAddPlaylistForm(req, res) {
+  try {
+    const genres = await loadGenreNames(req.session.user.id, "");
+
+    // Show an empty form when the page first loads.
+    return res.render("add-playlist", {
+      title: "Add Playlist",
+      user: req.session.user,
+      error: "",
+      genres: genres,
+      formData: {
+        name: "",
+        description: "",
+        genre: ""
+      }
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.render("add-playlist", {
+      title: "Add Playlist",
+      user: req.session.user,
+      error: "Something went wrong.",
+      genres: defaultGenres,
+      formData: {
+        name: "",
+        description: "",
+        genre: ""
+      }
+    });
+  }
+}
+
+// Read the submitted playlist form, validate it, and save the new playlist.
+// If validation fails, re-render the same form with the user's typed values.
 async function createPlaylist(req, res) {
-  // Read the form values and remove extra spaces - so its either the form value or just the empty string 
+  // Read the form values and remove extra spaces.
   const name = (req.body.name || "").trim();
   const description = (req.body.description || "").trim();
   const genre = (req.body.genre || "").trim();
-  const rating = (req.body.rating || "").trim();
 
   try {
+    const genres = await loadGenreNames(req.session.user.id, genre);
+
     // Stop and show the form again if any required field is missing.
+    // This avoids saving incomplete playlist documents in MongoDB.
     if (!name || !description || !genre) {
       return res.render("add-playlist", {
         title: "Add Playlist",
-        user: req.session.user, 
+        user: req.session.user,
         error: "All fields are required.",
-        genres: genres, // Pass the list here too
-        // Template for the formData
+        genres: genres,
         formData: {
           name: name,
           description: description,
-          genre: genre,
-          rating: rating
+          genre: genre
         }
       });
     }
 
-    // If the user entered a rating, it must stay between 1 and 5.
-    if (rating) {
-      const ratingNumber = Number(rating);
-
-      if (Number.isNaN(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
-        return res.render("add-playlist", {
-          title: "Add Playlist",
-          user: req.session.user,
-          error: "Rating must be a number from 1 to 5.",
-          genres: genres,
-          formData: {
-            name: name,
-            description: description,
-            genre: genre,
-            rating: rating
-          }
-        });
-      }
-    }
-
+    // Build the playlist object that will be saved into MongoDB.
+    // userId links the playlist back to the currently logged-in user.
     const playlistData = {
       name: name,
       description: description,
@@ -125,35 +203,41 @@ async function createPlaylist(req, res) {
       userId: req.session.user.id
     };
 
-    if (rating) {
-      playlistData.rating = Number(rating);
-    }
-
-    // Save the new playlist in MongoDB if we reach this stage then it will be able to add to creating the platlist
-    // Include the logged-in user's ID
+    // Save the new playlist in MongoDB.
     const playlist = await playlistModel.createPlaylist(playlistData);
 
-    // Open the new playlist page after saving, this follows a get request which we will extract later on
+    // Open the new playlist page after saving.
     return res.redirect("/playlists/view?id=" + playlist._id);
   } catch (error) {
     console.error(error);
+
+    let genres = defaultGenres;
+
+    try {
+      genres = await loadGenreNames(req.session.user.id, genre);
+    } catch (genreError) {
+      console.error(genreError);
+    }
+
     return res.render("add-playlist", {
       title: "Add Playlist",
-      user: req.session.user, 
+      user: req.session.user,
       error: "Something went wrong.",
       genres: genres,
       formData: {
         name: name,
         description: description,
-        genre: genre,
-        rating: rating
+        genre: genre
       }
     });
   }
 }
 
-// Show one playlist with its songs.
+// Show one playlist together with the songs that belong to it.
+// The controller also checks ownership so one user cannot open another user's playlist.
 async function showPlaylist(req, res) {
+  // playlistId identifies which playlist to load.
+  // searchTerm is optional and is used to filter song titles on this page.
   const playlistId = (req.query.id || "").trim();
   const searchTerm = (req.query.search || "").trim();
 
@@ -162,7 +246,7 @@ async function showPlaylist(req, res) {
     if (!playlistId) {
       return res.render("playlist-detail", {
         title: "Playlist Details",
-        user: req.session.user, 
+        user: req.session.user,
         playlist: null,
         songs: [],
         searchTerm: searchTerm,
@@ -172,33 +256,37 @@ async function showPlaylist(req, res) {
 
     // Find the playlist using the ID from the URL query.
     const playlist = await playlistModel.getPlaylistById(playlistId);
-    let songs = [];
 
-    // Only load songs if the playlist exists.
-    if (playlist) {
-      songs = await songModel.getSongsByPlaylistId(playlistId);
-      if (searchTerm) {
-        const loweredSearchTerm = searchTerm.toLowerCase();
-        songs = songs.filter(song => song.title.toLowerCase().includes(loweredSearchTerm));
-      }
-    }
-
-    // Show a message if the playlist cannot be found.
-    if (!playlist) {
+    // Stop if the playlist does not exist or does not belong to this user.
+    if (!playlist || String(playlist.userId) !== String(req.session.user.id)) {
       return res.render("playlist-detail", {
         title: "Playlist Details",
-        user: req.session.user, 
+        user: req.session.user,
         playlist: null,
-        songs: songs,
+        songs: [],
         searchTerm: searchTerm,
         error: "Playlist not found."
+      });
+    }
+
+    // Load all songs that belong to this playlist.
+    // The song model finds them by matching playlistId in MongoDB.
+    let songs = await songModel.getSongsByPlaylistId(playlistId);
+
+    // Filter songs if the user searched for a title.
+    // This is only done in memory after the songs are loaded.
+    if (searchTerm) {
+      const loweredSearchTerm = searchTerm.toLowerCase();
+
+      songs = songs.filter(function (song) {
+        return song.title.toLowerCase().includes(loweredSearchTerm);
       });
     }
 
     // Show the playlist together with all songs inside it.
     return res.render("playlist-detail", {
       title: playlist.name,
-      user: req.session.user, 
+      user: req.session.user,
       playlist: playlist,
       songs: songs,
       searchTerm: searchTerm,
@@ -206,9 +294,10 @@ async function showPlaylist(req, res) {
     });
   } catch (error) {
     console.error(error);
+
     return res.render("playlist-detail", {
       title: "Playlist Details",
-      user: req.session.user, 
+      user: req.session.user,
       playlist: null,
       songs: [],
       searchTerm: searchTerm,
@@ -217,218 +306,17 @@ async function showPlaylist(req, res) {
   }
 }
 
-// Show the add song page.
-async function showAddSongForm(req, res) {
-  const playlistId = (req.query.id || "").trim();
-
-  try {
-    // Make sure an ID was passed through the query string.
-    if (!playlistId) {
-      return res.render("add-song", {
-        title: "Add Song",
-        user: req.session.user,
-        playlist: null,
-        error: "Playlist not found.",
-        formData: {
-          title: "",
-          artist: "",
-          album: "",
-          rating: "",
-          review: ""
-        }
-      });
-    }
-
-    // Find the playlist first so the form knows where to add the song.
-    const playlist = await playlistModel.getPlaylistById(playlistId);
-
-    // Show an error if the playlist does not exist.
-    if (!playlist) {
-      return res.render("add-song", {
-        title: "Add Song",
-        user: req.session.user,
-        playlist: null,
-        error: "Playlist not found.",
-        formData: {
-          title: "",
-          artist: "",
-          album: "",
-          rating: "",
-          review: ""
-        }
-      });
-    }
-
-    // If we reach here that means that the playlist does exist 
-    // Show an empty song form for the selected playlist.
-    return res.render("add-song", {
-      title: "Add Song",
-      user: req.session.user,
-      playlist: playlist,
-      error: "",
-      formData: {
-        title: "",
-        artist: "",
-        album: "",
-        rating: "",
-        review: ""
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    return res.render("add-song", {
-      title: "Add Song",
-      user: req.session.user,
-      playlist: null,
-      error: "Something went wrong.",
-      formData: {
-        title: "",
-        artist: "",
-        album: "",
-        rating: "",
-        review: ""
-      }
-    });
-  }
-}
-
-// Save a new song.
-async function createSong(req, res) {
-  // Read the form values and remove extra spaces.
-  const playlistId = (req.body.playlistId || "").trim();
-  const title = (req.body.title || "").trim();
-  const artist = (req.body.artist || "").trim();
-  const album = (req.body.album || "").trim();
-  const rating = (req.body.rating || "").trim();
-  const review = (req.body.review || "").trim();
-
-  let playlist = null;
-
-  try {
-    // Make sure the playlist exists before adding a song to it.
-    if (!playlistId) {
-      return res.render("add-song", {
-        title: "Add Song",
-        user: req.session.user,
-        playlist: null,
-        error: "Playlist not found.",
-        formData: {
-          title: title,
-          artist: artist,
-          album: album,
-          rating: rating,
-          review: review
-        }
-      });
-    }
-
-    playlist = await playlistModel.getPlaylistById(playlistId);
-
-    if (!playlist) {
-      return res.render("add-song", {
-        title: "Add Song",
-        user: req.session.user,
-        playlist: null,
-        error: "Playlist not found.",
-        formData: {
-          title: title,
-          artist: artist,
-          album: album,
-          rating: rating,
-          review: review
-        }
-      });
-    }
-
-    // Title, artist, and album are required for every song.
-    if (!title || !artist || !album) {
-      return res.render("add-song", {
-        title: "Add Song",
-        user: req.session.user,
-        playlist: playlist,
-        error: "Title, artist, and album are required.",
-        formData: {
-          title: title,
-          artist: artist,
-          album: album,
-          rating: rating,
-          review: review
-        }
-      });
-    }
-
-    // If the user entered a rating, it must stay between 1 and 5.
-    if (rating) {
-      const ratingNumber = Number(rating);
-
-      if (Number.isNaN(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
-        return res.render("add-song", {
-          title: "Add Song",
-          user: req.session.user,
-          playlist: playlist,
-          error: "Rating must be a number from 1 to 5.",
-          formData: {
-            title: title,
-            artist: artist,
-            album: album,
-            rating: rating,
-            review: review
-          }
-        });
-      }
-    }
-
-    // Placeholder to build the song data that will be saved.
-    const songData = {
-      title: title,
-      artist: artist,
-      album: album,
-      playlistId: playlistId
-    };
-
-    // Only save rating if the user entered a rating.
-    if (rating) {
-      songData.rating = Number(rating);
-    }
-
-    // Only save review if the user entered one.
-    if (review) {
-      songData.review = review;
-    }
-
-    // Save the song in MongoDB.
-    await songModel.createSong(songData);
-
-    // Go back to the playlist page after saving, making it in the URL which can then be retrieve later on
-    return res.redirect("/playlists/view?id=" + playlistId);
-  } catch (error) {
-    console.error(error);
-    return res.render("add-song", {
-      title: "Add Song",
-      user: req.session.user,
-      playlist: playlist,
-      error: "Something went wrong.",
-      formData: {
-        title: title,
-        artist: artist,
-        album: album,
-        rating: rating,
-        review: review
-      }
-    });
-  }
-}
-
-// Turn a date into a string that works with datetime-local input fields
+// Turn a date into a string that works with datetime-local input fields.
+// HTML datetime-local inputs expect a text value in YYYY-MM-DDTHH:MM:SS format.
 function formatDateTimeLocal(date) {
   const d = new Date(date);
 
-  // Add a leading zero to any number that is only one digit long
+  // Add a leading zero to any number that is only one digit long.
   function pad(num) {
     return String(num).padStart(2, "0");
   }
 
-  // Return the date and time as YYYY-MM-DDTHH:MM:SS so the input field can read it
+  // Return the date and time as YYYY-MM-DDTHH:MM:SS so the input field can read it.
   return d.getFullYear() + "-" +
     pad(d.getMonth() + 1) + "-" +
     pad(d.getDate()) + "T" +
@@ -437,12 +325,15 @@ function formatDateTimeLocal(date) {
     pad(d.getSeconds());
 }
 
-// Show the edit playlist page with the current playlist details already filled in
+// Load one existing playlist and place its current values into the edit form.
+// The controller also prepares the genre dropdown so the saved genre can be shown again.
 async function showEditPlaylist(req, res) {
   const playlistId = (req.query.playlistId || "").trim();
 
   try {
-    // Show an error if no playlist ID was given in the URL
+    const genres = await loadGenreNames(req.session.user.id, "");
+
+    // Show an error if no playlist ID was given in the URL.
     if (!playlistId) {
       return res.render("edit-playlist", {
         title: "Edit Playlist",
@@ -454,17 +345,16 @@ async function showEditPlaylist(req, res) {
           name: "",
           description: "",
           genre: "",
-          rating: "",
           createdAt: ""
         }
       });
     }
 
-    // Look up the playlist using the ID from the URL
+    // Look up the playlist using the ID from the URL.
     const playlist = await playlistModel.getPlaylistById(playlistId);
 
-    // Show an error if the playlist does not exist in the database
-    if (!playlist) {
+    // Show an error if the playlist does not exist in the database.
+    if (!playlist || String(playlist.userId) !== String(req.session.user.id)) {
       return res.render("edit-playlist", {
         title: "Edit Playlist",
         user: req.session.user,
@@ -475,70 +365,68 @@ async function showEditPlaylist(req, res) {
           name: "",
           description: "",
           genre: "",
-          rating: "",
           createdAt: ""
         }
       });
     }
 
-    // Open the edit form with the playlist's existing values pre-filled
+    // Open the edit form with the playlist's existing values pre-filled.
     return res.render("edit-playlist", {
       title: "Edit Playlist",
       user: req.session.user,
       error: "",
-      genres: genres,
+      genres: await loadGenreNames(req.session.user.id, playlist.genre),
       formData: {
         playlistId: playlist._id,
         name: playlist.name,
         description: playlist.description,
         genre: playlist.genre,
-        rating: playlist.rating ? String(playlist.rating) : "",
-        // Format the date so the datetime-local input field can display it correctly
         createdAt: formatDateTimeLocal(playlist.createdAt)
       }
     });
   } catch (error) {
     console.error(error);
+
     return res.render("edit-playlist", {
       title: "Edit Playlist",
       user: req.session.user,
       error: "Something went wrong.",
-      genres: genres,
+      genres: defaultGenres,
       formData: {
         playlistId: "",
         name: "",
         description: "",
         genre: "",
-        rating: "",
         createdAt: ""
       }
     });
   }
 }
 
-// Save the changes made to an existing playlist.
+// Read the edited playlist form, validate it, and update the saved playlist document.
+// If anything is invalid, re-render the same page with the submitted values still filled in.
 async function editPlaylist(req, res) {
-  // Read the updated values from the form and remove extra spaces
+  // Read the updated values from the form and remove extra spaces.
   const playlistId = (req.body.playlistId || "").trim();
   const name = (req.body.name || "").trim();
   const description = (req.body.description || "").trim();
   const genre = (req.body.genre || "").trim();
-  const rating = (req.body.rating || "").trim();
   const createdAt = (req.body.createdAt || "").trim();
 
-   // Bundle the form values together so they can be sent back easily if there is an error
+  // Bundle the form values together so they can be sent back easily if there is an error.
   const formData = {
     playlistId: playlistId,
     name: name,
     description: description,
     genre: genre,
-    rating: rating,
     createdAt: createdAt
   };
 
   try {
+    const genres = await loadGenreNames(req.session.user.id, genre);
+
+    // Show an error if no playlist ID was included in the form.
     if (!playlistId) {
-      // Show an error if no playlist ID was included in the form
       return res.render("edit-playlist", {
         title: "Edit Playlist",
         user: req.session.user,
@@ -548,7 +436,21 @@ async function editPlaylist(req, res) {
       });
     }
 
-    // Stop and show the form again if any required field is missing
+    // Check that the playlist belongs to the current user.
+    // This stops one user from editing another user's playlist.
+    const existingPlaylist = await playlistModel.getPlaylistById(playlistId);
+
+    if (!existingPlaylist || String(existingPlaylist.userId) !== String(req.session.user.id)) {
+      return res.render("edit-playlist", {
+        title: "Edit Playlist",
+        user: req.session.user,
+        error: "Playlist not found.",
+        genres: genres,
+        formData: formData
+      });
+    }
+
+    // Stop and show the form again if any required field is missing.
     if (!name || !description || !genre || !createdAt) {
       return res.render("edit-playlist", {
         title: "Edit Playlist",
@@ -559,24 +461,11 @@ async function editPlaylist(req, res) {
       });
     }
 
-    if (rating) {
-      const ratingNumber = Number(rating);
-
-      if (Number.isNaN(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
-        return res.render("edit-playlist", {
-          title: "Edit Playlist",
-          user: req.session.user,
-          error: "Rating must be a number from 1 to 5.",
-          genres: genres,
-          formData: formData
-        });
-      }
-    }
-
-    // Convert the date string from the form into a proper Date object
+    // Convert the date string from the form into a proper Date object.
+    // MongoDB stores createdAt as a real date, not as plain text.
     const createdDate = new Date(createdAt);
 
-    // Show an error if the date string could not be turned into a valid date
+    // Show an error if the date string could not be turned into a valid date.
     if (Number.isNaN(createdDate.getTime())) {
       return res.render("edit-playlist", {
         title: "Edit Playlist",
@@ -587,32 +476,31 @@ async function editPlaylist(req, res) {
       });
     }
 
+    // Build the object containing the new playlist values.
+    // This object is passed to the model's update function.
     const updatedData = {
       name: name,
       description: description,
       genre: genre,
-      createdAt: createdDate,
-      rating: rating ? Number(rating) : null
+      createdAt: createdDate
     };
 
-    // Save the updated playlist details to the database
-    const updatedPlaylist = await playlistModel.updatePlaylistById(playlistId, updatedData);
+    // Save the updated playlist details to the database.
+    await playlistModel.updatePlaylistById(playlistId, updatedData);
 
-    // Show an error if the playlist could not be found during the update
-    if (!updatedPlaylist) {
-      return res.render("edit-playlist", {
-        title: "Edit Playlist",
-        user: req.session.user,
-        error: "Playlist not found.",
-        genres: genres,
-        formData: formData
-      });
-    }
-
-    // Go back to the playlist page once the changes have been saved
+    // Go back to the playlist page once the changes have been saved.
     return res.redirect("/playlists/view?id=" + playlistId);
   } catch (error) {
     console.error(error);
+
+    let genres = defaultGenres;
+
+    try {
+      genres = await loadGenreNames(req.session.user.id, genre);
+    } catch (genreError) {
+      console.error(genreError);
+    }
+
     return res.render("edit-playlist", {
       title: "Edit Playlist",
       user: req.session.user,
@@ -623,19 +511,23 @@ async function editPlaylist(req, res) {
   }
 }
 
-// Delete one playlist and its songs.
+// Delete one playlist and the related child data connected to it.
+// This includes songs, reviews linked to those songs, and tags linked to the playlist.
 async function deletePlaylist(req, res) {
   const playlistId = (req.body.playlistId || "").trim();
 
   try {
     // Check whether the playlist exists first.
     if (!playlistId) {
-      const playlists = await playlistModel.getAllPlaylists();
+      const playlists = await playlistModel.getAllPlaylists(req.session.user.id);
 
       return res.render("playlist-list", {
         title: "All Playlists",
         user: req.session.user,
         playlists: playlists,
+        genres: await loadGenreNames(req.session.user.id, ""),
+        selectedGenre: "",
+        sortType: "",
         error: "Playlist not found."
       });
     }
@@ -643,25 +535,34 @@ async function deletePlaylist(req, res) {
     const playlist = await playlistModel.getPlaylistById(playlistId);
 
     // If not found, return to the list page with an error.
-    if (!playlist) {
-      const playlists = await playlistModel.getAllPlaylists();
+    if (!playlist || String(playlist.userId) !== String(req.session.user.id)) {
+      const playlists = await playlistModel.getAllPlaylists(req.session.user.id);
 
       return res.render("playlist-list", {
         title: "All Playlists",
         user: req.session.user,
         playlists: playlists,
+        genres: await loadGenreNames(req.session.user.id, ""),
+        selectedGenre: "",
+        sortType: "",
         error: "Playlist not found."
       });
     }
 
     // Load all songs that belong to this playlist.
+    // We need them first so we can remove their reviews before deleting the songs.
     const songs = await songModel.getSongsByPlaylistId(playlistId);
 
-    // Delete each song before deleting the playlist itself, the user will not see this
-    // This will be done on the backend
+    // Delete all reviews that belong to each song.
+    // review.songId points to song._id, so we remove those linked review documents first.
     for (const song of songs) {
+      await reviewModel.deleteReviewsBySongId(song._id);
       await songModel.deleteSongById(song._id);
     }
+
+    // Delete all tags that belong to this playlist.
+    // tag.playlistId points to playlist._id, so these tags should not remain after playlist deletion.
+    await tagModel.deleteTagsByPlaylistId(playlistId);
 
     // Delete the playlist after its songs are removed.
     await playlistModel.deletePlaylistById(playlistId);
@@ -670,90 +571,33 @@ async function deletePlaylist(req, res) {
     return res.redirect("/playlists");
   } catch (error) {
     console.error(error);
+
+    let genres = defaultGenres;
+
+    try {
+      genres = await loadGenreNames(req.session.user.id, "");
+    } catch (genreError) {
+      console.error(genreError);
+    }
+
     return res.render("playlist-list", {
       title: "All Playlists",
       user: req.session.user,
       playlists: [],
+      genres: genres,
+      selectedGenre: "",
+      sortType: "",
       error: "Something went wrong."
     });
   }
 }
-
-// Delete one song from a playlist.
-async function deleteSong(req, res) {
-  const playlistId = (req.query.playlistId || "").trim();
-  const songId = (req.query.songId || "").trim();
-  let playlist = null;
-  let songs = [];
-
-  try {
-    // Check whether the parent playlist exists.
-    if (!playlistId || !songId) {
-      return res.render("playlist-detail", {
-        title: "Playlist Details",
-        user: req.session.user,
-        playlist: null,
-        songs: [],
-        error: "Song not found."
-      });
-    }
-
-    playlist = await playlistModel.getPlaylistById(playlistId);
-
-    if (!playlist) {
-      return res.render("playlist-detail", {
-        title: "Playlist Details",
-        user: req.session.user,
-        playlist: null,
-        songs: [],
-        error: "Playlist not found."
-      });
-    }
-
-    // Load the song directly using its ID.
-    const song = await songModel.getSongById(songId);
-
-    // Make sure the song exists and belongs to this playlist.
-    if (!song || String(song.playlistId) !== playlistId) {
-      songs = await songModel.getSongsByPlaylistId(playlistId);
-
-      return res.render("playlist-detail", {
-        title: playlist.name,
-        user: req.session.user,
-        playlist: playlist,
-        songs: songs,
-        error: "Song not found."
-      });
-    }
-
-    // Delete the selected song.
-    await songModel.deleteSongById(songId);
-
-    // Return to the playlist details page.
-    return res.redirect("/playlists/view?id=" + playlistId);
-  } catch (error) {
-    console.error(error);
-    return res.render("playlist-detail", {
-      title: playlist ? playlist.name : "Playlist Details",
-      user: req.session.user,
-      playlist: playlist,
-      songs: songs,
-      error: "Something went wrong."
-    });
-  }
-}
-
-
 
 module.exports = {
   listPlaylists: listPlaylists,
   showAddPlaylistForm: showAddPlaylistForm,
   createPlaylist: createPlaylist,
   showPlaylist: showPlaylist,
-  showAddSongForm: showAddSongForm,
-  createSong: createSong,
-  deletePlaylist: deletePlaylist,
-  deleteSong: deleteSong,
   showEditPlaylist: showEditPlaylist,
-  editPlaylist: editPlaylist
+  editPlaylist: editPlaylist,
+  deletePlaylist: deletePlaylist
 };

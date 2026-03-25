@@ -1,154 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Basic page settings -->
+  <!-- Basic page settings shown in the browser tab and used for responsive layout -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
-
-  <!-- Adding spotify style coloring CSS because we cool  -->
-  <!-- Added hover effect to indicate they're clickable   -->
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f4f4f4;
-      color: #222;
-    }
-
-    header {
-      background: #1db954;
-      color: white;
-      padding: 20px;
-    }
-
-    nav a {
-      color: white;
-      margin-right: 15px;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    main {
-      max-width: 900px;
-      margin: 30px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-    }
-
-    form {
-      margin-top: 15px;
-    }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      box-sizing: border-box;
-    }
-
-
-
-    .icon-button {
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      margin-top: 0;
-      border: none;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #1db954;
-    }
-
-    .icon-button img {
-      width: 16px;
-      height: 16px;
-      display: block;
-    }
-
-    .delete-button {
-      background: #d9534f;
-    }
-
-    .error {
-      color: #b00020;
-      font-weight: bold;
-    }
-
-    .inline-form {
-      display: inline;
-    }
-
-    .action-button {
-      width: 140px;
-      font-weight: bold;
-    }
-
-    .icon-button:hover {
-      background-color: #17a34a; /* Slightly darker green on hover */
-    }
-
-    .delete-button:hover {
-      background: #c13f3b;
-    }
-
-    .user-menu {
-      position: absolute; /* keeps it pinned */
-      top: 20px;
-      right: 20px;
-    }
-
-    .user-menu a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      margin-left: 5px;
-    }
-    
-    .user-menu a:hover {
-      text-decoration: underline;
-    }
-
-  </style>
 </head>
 <body>
-  <!-- Main page header -->
-  <header>
-    <h1>Mini Spotify Playlist Manager</h1>
+  <!-- Shared page title shown at the top of most pages -->
+  <h1>Mini Spotify Playlist Manager</h1>
 
-    <!-- Main navigation -->
-     <nav>
-        <% if (user) { %>
-          <!-- Only show when logged in -->
-          <a href="/playlists">All Playlists</a>
-          <a href="/playlists/add">Add Playlist</a>
-        <% } else { %>
-          <!-- Show when NOT logged in -->
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-        <% } %>
-      </nav>
-    
-
-    <!-- Only show if user is logged in -->
-    <!-- User menu, top-right -->
-    <% if (user) { %>
-    <div class="user-menu">
-      Hi, <%= user.username %> | 
-      <a href="/change-password">Change Password</a> | 
-      <a href="/logout">Logout</a>
-    </div>
+  <!-- Main navigation links -->
+  <!-- Logged-in users see the app modules, while logged-out users see login/register -->
+  <% if (user) { %>
+    <a href="/playlists">All Playlists</a>
+    <br>
+    <a href="/songs">All Songs</a>
+    <br>
+    <a href="/genres">Genres</a>
+    <br>
+    <a href="/reviews">Reviews</a>
+    <br>
+    <a href="/tags">Tags</a>
+    <br>
+    <a href="/playlists/add">Add Playlist</a>
+  <% } else { %>
+    <a href="/login">Login</a>
+    <br>
+    <a href="/register">Register</a>
   <% } %>
-  </header>
 
+  <!-- Account-related links for logged-in users only -->
+  <% if (user) { %>
+    <br>
+    <a href="/change-password">Change Password</a>
+    <br>
+    <a href="/logout">Logout</a>
+    <br>
+  <% } %>
+
+  <br>
+  <hr>
+  <br>
+
+  <!-- Page-specific content begins here -->
   <main>
