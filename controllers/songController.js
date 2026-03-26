@@ -2,6 +2,7 @@ const songModel = require("../models/songModel");
 const playlistModel = require("../models/playlistModel");
 const genreModel = require("../models/genreModel");
 const reviewModel = require("../models/reviewModel");
+const likedSongModel = require("../models/likedSongModel");
 
 // Default genres to show before the user creates custom genres.
 // These act as starter values even if the user has not created any genre documents yet.
@@ -717,7 +718,7 @@ async function editSong(req, res) {
 }
 
 // Delete one song.
-// This also deletes reviews linked to the song before removing the song itself.
+// This also deletes reviews and liked song records linked to the song before removing the song itself.
 async function deleteSong(req, res) {
   const songId = (req.body.songId || "").trim();
 
@@ -759,7 +760,11 @@ async function deleteSong(req, res) {
     // This keeps the database tidy so no orphaned review documents remain.
     await reviewModel.deleteReviewsBySongId(songId);
 
-    // Delete the song after its reviews are removed.
+    // Delete all liked song records that point to this song.
+    // This stops the liked songs list from keeping broken song references.
+    await likedSongModel.deleteLikedSongsBySongId(songId);
+
+    // Delete the song after its child records are removed.
     await songModel.deleteSongById(songId);
 
     // Return to the songs list page.

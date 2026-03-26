@@ -87,6 +87,8 @@
             <br>
             <a href="/reviews/add?songId=<%= song._id %>">Add Review</a>
             <br>
+            <a href="/liked-songs/add?songId=<%= song._id %>">Like Song</a>
+            <br>
             <form action="/songs/delete" method="POST">
               <input type="hidden" name="songId" value="<%= song._id %>">
               <button type="submit">Delete</button>

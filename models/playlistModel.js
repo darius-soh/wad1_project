@@ -59,6 +59,11 @@ function createPlaylist(data) {
 // Delete a playlist by its MongoDB ID
 // findByIdAndDelete() method is used to find and remove 
 // a single document from a MongoDB collection by its _id field.
+// findByIdAndDelete(id): Fetches the document and deletes it in one operation, 
+// returning the original document. Ideal when you need to confirm what was deleted 
+// or act on its data afterward.
+// deleteOne(filter), on the other hand, simply deletes the first document matching 
+// the criteria and returns a success status (count).
 function deletePlaylistById(id) {
     return Playlist.findByIdAndDelete(id); 
 }

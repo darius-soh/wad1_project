@@ -1,0 +1,67 @@
+<%- include("common/header", { title: title, user: user }) %>
+
+<!-- Page heading -->
+<table width="100%">
+  <tr>
+    <td>
+      <h1>Liked Songs</h1>
+    </td>
+    <td align="right">
+      <a href="/liked-songs/add">
+        <button type="button">Add a liked song</button>
+      </a>
+    </td>
+  </tr>
+</table>
+<hr>
+
+<!-- Error message -->
+<% if (error) { %>
+  <p><%= error %></p>
+<% } %>
+
+<!-- Message when there are no liked songs -->
+<% if (!likedSongs || likedSongs.length === 0) { %>
+  <p>No liked songs found.</p>
+<% } %>
+
+<!-- Liked songs table -->
+<!-- Each row shows one liked song together with its related song and playlist details -->
+<% if (likedSongs && likedSongs.length > 0) { %>
+  <table width="100%" border="1">
+    <tr>
+      <th>Song</th>
+      <th>Artist</th>
+      <th>Album</th>
+      <th>Genre</th>
+      <th>Playlist</th>
+      <th>Note</th>
+      <th>Created</th>
+      <th>Action</th>
+    </tr>
+
+    <% for (const likedSong of likedSongs) { %>
+      <tr align="center">
+        <td><%= likedSong.songTitle %></td>
+        <td><%= likedSong.artist %></td>
+        <td><%= likedSong.album %></td>
+        <td><%= likedSong.genre %></td>
+        <td><%= likedSong.playlistName %></td>
+        <td><%= likedSong.note %></td>
+        <td><%= likedSong.createdAt.toLocaleString() %></td>
+        <td>
+          <a href="/liked-songs/edit?likedSongId=<%= likedSong._id %>">Edit</a>
+          <br>
+          <form action="/liked-songs/delete" method="POST">
+            <input type="hidden" name="likedSongId" value="<%= likedSong._id %>">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% } %>
+  </table>
+<% } %>
+
+</main>
+</body>
+</html>

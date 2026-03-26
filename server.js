@@ -30,8 +30,8 @@ const genreRoutes = require("./routes/genreRoutes");
 // Import review routes
 const reviewRoutes = require("./routes/reviewRoutes");
 
-// Import tag routes
-const tagRoutes = require("./routes/tagRoutes");
+// Import liked song routes
+const likedSongRoutes = require("./routes/likedSongRoutes");
 
 // Import user routes
 const userRoutes = require("./routes/userRoutes");
@@ -89,9 +89,9 @@ server.use("/genres", genreRoutes);
 // Any request that starts with /reviews will be passed to reviewRoutes.js.
 server.use("/reviews", reviewRoutes);
 
-// Mount tag routes.
-// Any request that starts with /tags will be passed to tagRoutes.js.
-server.use("/tags", tagRoutes);
+// Mount liked song routes.
+// Any request that starts with /liked-songs will be passed to likedSongRoutes.js.
+server.use("/liked-songs", likedSongRoutes);
 
 // Redirect any unknown routes back to login.
 // If no earlier route matches, the user is sent to a safe starting page.

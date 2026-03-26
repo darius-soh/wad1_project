@@ -1,7 +1,7 @@
 const playlistModel = require("../models/playlistModel");
 const songModel = require("../models/songModel");
 const reviewModel = require("../models/reviewModel");
-const tagModel = require("../models/tagModel");
+const likedSongModel = require("../models/likedSongModel");
 
 // Sort playlists using simple comparisons taught in school.
 // Each branch changes the same array in place before it is rendered.
@@ -312,7 +312,7 @@ async function editPlaylist(req, res) {
 }
 
 // Delete one playlist and the related child data connected to it.
-// This includes songs, reviews linked to those songs, and tags linked to the playlist.
+// This includes songs, reviews linked to those songs, and liked song records linked to those songs.
 async function deletePlaylist(req, res) {
   const playlistId = (req.body.playlistId || "").trim();
 
@@ -346,11 +346,13 @@ async function deletePlaylist(req, res) {
     const songs = await songModel.getSongsByPlaylistId(playlistId);
 
     for (const song of songs) {
+      // Delete the child data that points to this song before deleting the song itself.
+      // This keeps the reviews and liked songs collections tidy.
       await reviewModel.deleteReviewsBySongId(song._id);
+      await likedSongModel.deleteLikedSongsBySongId(song._id);
       await songModel.deleteSongById(song._id);
     }
 
-    await tagModel.deleteTagsByPlaylistId(playlistId);
     await playlistModel.deletePlaylistById(playlistId);
 
     return res.redirect("/playlists");

@@ -1,7 +1,7 @@
 <%- include("common/header", { title: title, user: user }) %>
 
 <!-- Page heading -->
-<h2>Edit Review</h2>
+<h2>Edit Liked Song</h2>
 
 <!-- Error message -->
 <% if (error) { %>
@@ -13,11 +13,11 @@
   <p>No songs found. <a href="/songs/add">Create a song first</a></p>
 <% } %>
 
-<!-- Edit review form -->
-<!-- The hidden reviewId tells the controller which review document to update -->
+<!-- Edit liked song form -->
+<!-- The hidden likedSongId tells the controller which liked song document to update -->
 <% if (songs && songs.length > 0) { %>
-  <form action="/reviews/edit" method="POST">
-    <input type="hidden" name="reviewId" value="<%= formData.reviewId %>">
+  <form action="/liked-songs/edit" method="POST">
+    <input type="hidden" name="likedSongId" value="<%= formData.likedSongId %>">
 
     <label for="songId">Song</label>
     <br>
@@ -32,19 +32,9 @@
     </select>
     <br><br>
 
-    <label for="title">Review Title</label>
+    <label for="note">Why do you like this song?</label>
     <br>
-    <input id="title" name="title" type="text" value="<%= formData.title %>">
-    <br><br>
-
-    <label for="comment">Comment</label>
-    <br>
-    <textarea id="comment" name="comment" rows="4"><%= formData.comment %></textarea>
-    <br><br>
-
-    <label for="rating">Rating (1 to 5)</label>
-    <br>
-    <input id="rating" name="rating" type="number" min="1" max="5" value="<%= formData.rating %>">
+    <textarea id="note" name="note" rows="4"><%= formData.note %></textarea>
     <br><br>
 
     <button type="submit">Save Changes</button>
