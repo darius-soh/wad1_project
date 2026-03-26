@@ -44,7 +44,7 @@ async function listPlaylists(req, res) {
     // Sort the playlists only when the user selected a sort type.
     sortPlaylists(playlists, sortType);
 
-    return res.render("playlist-list", {
+    return res.render("playlists/playlist-list", {
       title: "All Playlists",
       user: req.session.user,
       playlists: playlists,
@@ -54,7 +54,7 @@ async function listPlaylists(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("playlist-list", {
+    return res.render("playlists/playlist-list", {
       title: "All Playlists",
       user: req.session.user,
       playlists: [],
@@ -67,7 +67,7 @@ async function listPlaylists(req, res) {
 // Show the add playlist page.
 // This page only needs empty form values because playlists no longer store genre.
 function showAddPlaylistForm(req, res) {
-  return res.render("add-playlist", {
+  return res.render("playlists/add-playlist", {
     title: "Add Playlist",
     user: req.session.user,
     error: "",
@@ -88,7 +88,7 @@ async function createPlaylist(req, res) {
     // Stop and show the form again if any required field is missing.
     // This avoids saving incomplete playlist documents in MongoDB.
     if (!name || !description) {
-      return res.render("add-playlist", {
+      return res.render("playlists/add-playlist", {
         title: "Add Playlist",
         user: req.session.user,
         error: "All fields are required.",
@@ -113,7 +113,7 @@ async function createPlaylist(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("add-playlist", {
+    return res.render("playlists/add-playlist", {
       title: "Add Playlist",
       user: req.session.user,
       error: "Something went wrong.",
@@ -133,7 +133,7 @@ async function showPlaylist(req, res) {
 
   try {
     if (!playlistId) {
-      return res.render("playlist-detail", {
+      return res.render("playlists/playlist-detail", {
         title: "Playlist Details",
         user: req.session.user,
         playlist: null,
@@ -146,7 +146,7 @@ async function showPlaylist(req, res) {
     const playlist = await playlistModel.getPlaylistById(playlistId);
 
     if (!playlist || String(playlist.userId) !== String(req.session.user.id)) {
-      return res.render("playlist-detail", {
+      return res.render("playlists/playlist-detail", {
         title: "Playlist Details",
         user: req.session.user,
         playlist: null,
@@ -166,7 +166,7 @@ async function showPlaylist(req, res) {
       });
     }
 
-    return res.render("playlist-detail", {
+    return res.render("playlists/playlist-detail", {
       title: playlist.name,
       user: req.session.user,
       playlist: playlist,
@@ -177,7 +177,7 @@ async function showPlaylist(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("playlist-detail", {
+    return res.render("playlists/playlist-detail", {
       title: "Playlist Details",
       user: req.session.user,
       playlist: null,
@@ -195,7 +195,7 @@ async function showEditPlaylist(req, res) {
 
   try {
     if (!playlistId) {
-      return res.render("edit-playlist", {
+      return res.render("playlists/edit-playlist", {
         title: "Edit Playlist",
         user: req.session.user,
         error: "Playlist not found.",
@@ -210,7 +210,7 @@ async function showEditPlaylist(req, res) {
     const playlist = await playlistModel.getPlaylistById(playlistId);
 
     if (!playlist || String(playlist.userId) !== String(req.session.user.id)) {
-      return res.render("edit-playlist", {
+      return res.render("playlists/edit-playlist", {
         title: "Edit Playlist",
         user: req.session.user,
         error: "Playlist not found.",
@@ -222,7 +222,7 @@ async function showEditPlaylist(req, res) {
       });
     }
 
-    return res.render("edit-playlist", {
+    return res.render("playlists/edit-playlist", {
       title: "Edit Playlist",
       user: req.session.user,
       error: "",
@@ -235,7 +235,7 @@ async function showEditPlaylist(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("edit-playlist", {
+    return res.render("playlists/edit-playlist", {
       title: "Edit Playlist",
       user: req.session.user,
       error: "Something went wrong.",
@@ -263,7 +263,7 @@ async function editPlaylist(req, res) {
 
   try {
     if (!playlistId) {
-      return res.render("edit-playlist", {
+      return res.render("playlists/edit-playlist", {
         title: "Edit Playlist",
         user: req.session.user,
         error: "Playlist not found.",
@@ -274,7 +274,7 @@ async function editPlaylist(req, res) {
     const existingPlaylist = await playlistModel.getPlaylistById(playlistId);
 
     if (!existingPlaylist || String(existingPlaylist.userId) !== String(req.session.user.id)) {
-      return res.render("edit-playlist", {
+      return res.render("playlists/edit-playlist", {
         title: "Edit Playlist",
         user: req.session.user,
         error: "Playlist not found.",
@@ -283,7 +283,7 @@ async function editPlaylist(req, res) {
     }
 
     if (!name || !description) {
-      return res.render("edit-playlist", {
+      return res.render("playlists/edit-playlist", {
         title: "Edit Playlist",
         user: req.session.user,
         error: "All fields are required.",
@@ -302,7 +302,7 @@ async function editPlaylist(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("edit-playlist", {
+    return res.render("playlists/edit-playlist", {
       title: "Edit Playlist",
       user: req.session.user,
       error: "Something went wrong.",
@@ -320,7 +320,7 @@ async function deletePlaylist(req, res) {
     if (!playlistId) {
       const playlists = await playlistModel.getAllPlaylists(req.session.user.id);
 
-      return res.render("playlist-list", {
+      return res.render("playlists/playlist-list", {
         title: "All Playlists",
         user: req.session.user,
         playlists: playlists,
@@ -334,7 +334,7 @@ async function deletePlaylist(req, res) {
     if (!playlist || String(playlist.userId) !== String(req.session.user.id)) {
       const playlists = await playlistModel.getAllPlaylists(req.session.user.id);
 
-      return res.render("playlist-list", {
+      return res.render("playlists/playlist-list", {
         title: "All Playlists",
         user: req.session.user,
         playlists: playlists,
@@ -359,7 +359,7 @@ async function deletePlaylist(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("playlist-list", {
+    return res.render("playlists/playlist-list", {
       title: "All Playlists",
       user: req.session.user,
       playlists: [],

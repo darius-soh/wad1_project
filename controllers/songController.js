@@ -115,12 +115,6 @@ function buildEmptySongFormData(playlistId) {
   };
 }
 
-// Read one text field from the URL query and remove extra spaces.
-// We use this helper so Spotify search values stay consistent across the add song page.
-function readQueryText(req, fieldName) {
-  return String(req.query[fieldName] || "").trim();
-}
-
 // Ask Spotify for an access token using the client credentials flow.
 // This token is needed before the app can call Spotify's search endpoint.
 async function getSpotifyAccessToken() {
@@ -256,7 +250,7 @@ async function listSongs(req, res) {
       });
     }
 
-    return res.render("song-list", {
+    return res.render("songs/song-list", {
       title: "All Songs",
       user: req.session.user,
       songs: songs,
@@ -267,7 +261,7 @@ async function listSongs(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("song-list", {
+    return res.render("songs/song-list", {
       title: "All Songs",
       user: req.session.user,
       songs: [],
@@ -286,7 +280,7 @@ async function showSong(req, res) {
   try {
     // Check whether a song ID was provided.
     if (!songId) {
-      return res.render("song-detail", {
+      return res.render("songs/song-detail", {
         title: "Song Details",
         user: req.session.user,
         song: null,
@@ -302,7 +296,7 @@ async function showSong(req, res) {
 
     // Stop immediately if no song document was found.
     if (!song) {
-      return res.render("song-detail", {
+      return res.render("songs/song-detail", {
         title: "Song Details",
         user: req.session.user,
         song: null,
@@ -317,7 +311,7 @@ async function showSong(req, res) {
 
     // Stop if this song does not belong to the logged-in user.
     if (!playlist) {
-      return res.render("song-detail", {
+      return res.render("songs/song-detail", {
         title: "Song Details",
         user: req.session.user,
         song: null,
@@ -327,7 +321,7 @@ async function showSong(req, res) {
     }
 
     // Show the song details page.
-    return res.render("song-detail", {
+    return res.render("songs/song-detail", {
       title: song.title,
       user: req.session.user,
       song: song,
@@ -337,7 +331,7 @@ async function showSong(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("song-detail", {
+    return res.render("songs/song-detail", {
       title: "Song Details",
       user: req.session.user,
       song: null,
@@ -352,13 +346,13 @@ async function showSong(req, res) {
 async function showAddSongForm(req, res) {
   // playlistId may come from a URL like /songs/add?playlistId=...
   // If present, it can be used to pre-select one playlist in the form.
-  const playlistId = readQueryText(req, "playlistId");
-  const spotifyQuery = readQueryText(req, "spotifyQuery");
-  const selectedTitle = readQueryText(req, "selectedTitle");
-  const selectedArtist = readQueryText(req, "selectedArtist");
-  const selectedArtistId = readQueryText(req, "selectedArtistId");
-  const selectedAlbum = readQueryText(req, "selectedAlbum");
-
+  const playlistId = String(req.query.playlistId || "").trim();
+  const spotifyQuery = String(req.query.spotifyQuery || "").trim();
+  const selectedTitle = String(req.query.selectedTitle || "").trim();
+  const selectedArtist = String(req.query.selectedArtist || "").trim();
+  const selectedArtistId = String(req.query.selectedArtistId || "").trim();
+  const selectedAlbum = String(req.query.selectedAlbum || "").trim();
+  
   try {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const genres = await loadGenreNames(req.session.user.id, "");
@@ -402,7 +396,7 @@ async function showAddSongForm(req, res) {
       }
     }
 
-    return res.render("add-song", {
+    return res.render("songs/add-song", {
       title: "Add Song",
       user: req.session.user,
       playlists: playlists,
@@ -417,7 +411,7 @@ async function showAddSongForm(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("add-song", {
+    return res.render("songs/add-song", {
       title: "Add Song",
       user: req.session.user,
       playlists: [],
@@ -467,7 +461,7 @@ async function createSong(req, res) {
     // Check that the user selected a valid playlist from their own playlist list.
     // This prevents a song from being attached to another user's playlist.
     if (!selectedPlaylist) {
-      return res.render("add-song", {
+      return res.render("songs/add-song", {
         title: "Add Song",
         user: req.session.user,
         playlists: playlists,
@@ -483,7 +477,7 @@ async function createSong(req, res) {
 
     // Title, artist, and album are required for every song.
     if (!title || !artist || !album || !genre) {
-      return res.render("add-song", {
+      return res.render("songs/add-song", {
         title: "Add Song",
         user: req.session.user,
         playlists: playlists,
@@ -515,7 +509,7 @@ async function createSong(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("add-song", {
+    return res.render("songs/add-song", {
       title: "Add Song",
       user: req.session.user,
       playlists: await loadUserPlaylists(req.session.user.id),
@@ -541,7 +535,7 @@ async function showEditSongForm(req, res) {
 
     // Check whether a song ID was provided.
     if (!songId) {
-      return res.render("edit-song", {
+      return res.render("songs/edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
@@ -555,7 +549,7 @@ async function showEditSongForm(req, res) {
 
     // Stop if the song does not exist.
     if (!song) {
-      return res.render("edit-song", {
+      return res.render("songs/edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
@@ -570,7 +564,7 @@ async function showEditSongForm(req, res) {
     const playlist = findPlaylistForSong(song, playlists);
 
     if (!playlist) {
-      return res.render("edit-song", {
+      return res.render("songs/edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
@@ -581,7 +575,7 @@ async function showEditSongForm(req, res) {
     }
 
     // Show the edit form with the song's current values.
-    return res.render("edit-song", {
+    return res.render("songs/edit-song", {
       title: "Edit Song",
       user: req.session.user,
       playlists: playlists,
@@ -599,7 +593,7 @@ async function showEditSongForm(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("edit-song", {
+    return res.render("songs/edit-song", {
       title: "Edit Song",
       user: req.session.user,
       playlists: await loadUserPlaylists(req.session.user.id),
@@ -639,7 +633,7 @@ async function editSong(req, res) {
 
     // Check whether the song exists.
     if (!existingSong) {
-      return res.render("edit-song", {
+      return res.render("songs/edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
@@ -654,7 +648,7 @@ async function editSong(req, res) {
     const currentPlaylist = findPlaylistForSong(existingSong, playlists);
 
     if (!currentPlaylist) {
-      return res.render("edit-song", {
+      return res.render("songs/edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
@@ -667,7 +661,7 @@ async function editSong(req, res) {
     // Check that the newly selected playlist also belongs to the current user.
     // This prevents the song from being moved to another user's playlist.
     if (!selectedPlaylist) {
-      return res.render("edit-song", {
+      return res.render("songs/edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
@@ -679,7 +673,7 @@ async function editSong(req, res) {
 
     // Title, artist, and album are required.
     if (!title || !artist || !album || !genre) {
-      return res.render("edit-song", {
+      return res.render("songs/edit-song", {
         title: "Edit Song",
         user: req.session.user,
         playlists: playlists,
@@ -706,7 +700,7 @@ async function editSong(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("edit-song", {
+    return res.render("songs/edit-song", {
       title: "Edit Song",
       user: req.session.user,
       playlists: await loadUserPlaylists(req.session.user.id),
@@ -728,7 +722,7 @@ async function deleteSong(req, res) {
       const playlists = await loadUserPlaylists(req.session.user.id);
       const songs = await loadUserSongs(playlists);
 
-      return res.render("song-list", {
+      return res.render("songs/song-list", {
         title: "All Songs",
         user: req.session.user,
         songs: songs,
@@ -746,7 +740,7 @@ async function deleteSong(req, res) {
     if (!song || !findPlaylistForSong(song, playlists)) {
       const songs = await loadUserSongs(playlists);
 
-      return res.render("song-list", {
+      return res.render("songs/song-list", {
         title: "All Songs",
         user: req.session.user,
         songs: songs,
@@ -772,7 +766,7 @@ async function deleteSong(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("song-list", {
+    return res.render("songs/song-list", {
       title: "All Songs",
       user: req.session.user,
       songs: [],

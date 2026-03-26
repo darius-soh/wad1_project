@@ -80,7 +80,7 @@ async function listLikedSongs(req, res) {
 
     attachSongDetailsToLikedSongs(likedSongs, songs);
 
-    return res.render("liked-song-list", {
+    return res.render("liked-songs/liked-song-list", {
       title: "Liked Songs",
       user: req.session.user,
       likedSongs: likedSongs,
@@ -89,7 +89,7 @@ async function listLikedSongs(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("liked-song-list", {
+    return res.render("liked-songs/liked-song-list", {
       title: "Liked Songs",
       user: req.session.user,
       likedSongs: [],
@@ -107,7 +107,7 @@ async function showAddLikedSongForm(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("add-liked-song", {
+    return res.render("liked-songs/add-liked-song", {
       title: "Add Liked Song",
       user: req.session.user,
       songs: songs,
@@ -117,7 +117,7 @@ async function showAddLikedSongForm(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("add-liked-song", {
+    return res.render("liked-songs/add-liked-song", {
       title: "Add Liked Song",
       user: req.session.user,
       songs: [],
@@ -145,7 +145,7 @@ async function createLikedSong(req, res) {
     const selectedSong = findSongById(songs, songId);
 
     if (!selectedSong) {
-      return res.render("add-liked-song", {
+      return res.render("liked-songs/add-liked-song", {
         title: "Add Liked Song",
         user: req.session.user,
         songs: songs,
@@ -155,7 +155,7 @@ async function createLikedSong(req, res) {
     }
 
     if (!note) {
-      return res.render("add-liked-song", {
+      return res.render("liked-songs/add-liked-song", {
         title: "Add Liked Song",
         user: req.session.user,
         songs: songs,
@@ -172,7 +172,7 @@ async function createLikedSong(req, res) {
     );
 
     if (existingLikedSong) {
-      return res.render("add-liked-song", {
+      return res.render("liked-songs/add-liked-song", {
         title: "Add Liked Song",
         user: req.session.user,
         songs: songs,
@@ -194,7 +194,7 @@ async function createLikedSong(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("add-liked-song", {
+    return res.render("liked-songs/add-liked-song", {
       title: "Add Liked Song",
       user: req.session.user,
       songs: songs,
@@ -214,7 +214,7 @@ async function showEditLikedSongForm(req, res) {
     const songs = await loadUserSongs(playlists);
 
     if (!likedSongId) {
-      return res.render("edit-liked-song", {
+      return res.render("liked-songs/edit-liked-song", {
         title: "Edit Liked Song",
         user: req.session.user,
         songs: songs,
@@ -226,7 +226,7 @@ async function showEditLikedSongForm(req, res) {
     const likedSong = await likedSongModel.getLikedSongById(likedSongId);
 
     if (!likedSong || String(likedSong.userId) !== String(req.session.user.id)) {
-      return res.render("edit-liked-song", {
+      return res.render("liked-songs/edit-liked-song", {
         title: "Edit Liked Song",
         user: req.session.user,
         songs: songs,
@@ -236,7 +236,7 @@ async function showEditLikedSongForm(req, res) {
     }
 
     if (!findSongById(songs, String(likedSong.songId))) {
-      return res.render("edit-liked-song", {
+      return res.render("liked-songs/edit-liked-song", {
         title: "Edit Liked Song",
         user: req.session.user,
         songs: songs,
@@ -245,7 +245,7 @@ async function showEditLikedSongForm(req, res) {
       });
     }
 
-    return res.render("edit-liked-song", {
+    return res.render("liked-songs/edit-liked-song", {
       title: "Edit Liked Song",
       user: req.session.user,
       songs: songs,
@@ -262,7 +262,7 @@ async function showEditLikedSongForm(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("edit-liked-song", {
+    return res.render("liked-songs/edit-liked-song", {
       title: "Edit Liked Song",
       user: req.session.user,
       songs: songs,
@@ -292,7 +292,7 @@ async function editLikedSong(req, res) {
     const likedSong = await likedSongModel.getLikedSongById(likedSongId);
 
     if (!likedSong || String(likedSong.userId) !== String(req.session.user.id)) {
-      return res.render("edit-liked-song", {
+      return res.render("liked-songs/edit-liked-song", {
         title: "Edit Liked Song",
         user: req.session.user,
         songs: songs,
@@ -302,7 +302,7 @@ async function editLikedSong(req, res) {
     }
 
     if (!selectedSong) {
-      return res.render("edit-liked-song", {
+      return res.render("liked-songs/edit-liked-song", {
         title: "Edit Liked Song",
         user: req.session.user,
         songs: songs,
@@ -312,7 +312,7 @@ async function editLikedSong(req, res) {
     }
 
     if (!note) {
-      return res.render("edit-liked-song", {
+      return res.render("liked-songs/edit-liked-song", {
         title: "Edit Liked Song",
         user: req.session.user,
         songs: songs,
@@ -329,7 +329,7 @@ async function editLikedSong(req, res) {
     );
 
     if (duplicateLikedSong && String(duplicateLikedSong._id) !== likedSongId) {
-      return res.render("edit-liked-song", {
+      return res.render("liked-songs/edit-liked-song", {
         title: "Edit Liked Song",
         user: req.session.user,
         songs: songs,
@@ -350,7 +350,7 @@ async function editLikedSong(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("edit-liked-song", {
+    return res.render("liked-songs/edit-liked-song", {
       title: "Edit Liked Song",
       user: req.session.user,
       songs: songs,
@@ -372,7 +372,7 @@ async function deleteLikedSong(req, res) {
       const songs = await loadUserSongs(playlists);
       attachSongDetailsToLikedSongs(likedSongs, songs);
 
-      return res.render("liked-song-list", {
+      return res.render("liked-songs/liked-song-list", {
         title: "Liked Songs",
         user: req.session.user,
         likedSongs: likedSongs,
@@ -388,7 +388,7 @@ async function deleteLikedSong(req, res) {
       const songs = await loadUserSongs(playlists);
       attachSongDetailsToLikedSongs(likedSongs, songs);
 
-      return res.render("liked-song-list", {
+      return res.render("liked-songs/liked-song-list", {
         title: "Liked Songs",
         user: req.session.user,
         likedSongs: likedSongs,
@@ -402,7 +402,7 @@ async function deleteLikedSong(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("liked-song-list", {
+    return res.render("liked-songs/liked-song-list", {
       title: "Liked Songs",
       user: req.session.user,
       likedSongs: [],

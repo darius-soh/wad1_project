@@ -94,7 +94,7 @@ async function listReviews(req, res) {
     // This helper adds friendly display values before we send the data to EJS.
     attachSongDetailsToReviews(reviews, songs);
 
-    return res.render("review-list", {
+    return res.render("reviews/review-list", {
       title: "All Reviews",
       user: req.session.user,
       reviews: reviews,
@@ -103,7 +103,7 @@ async function listReviews(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("review-list", {
+    return res.render("reviews/review-list", {
       title: "All Reviews",
       user: req.session.user,
       reviews: [],
@@ -123,7 +123,7 @@ async function showAddReviewForm(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("add-review", {
+    return res.render("reviews/add-review", {
       title: "Add Review",
       user: req.session.user,
       songs: songs,
@@ -133,7 +133,7 @@ async function showAddReviewForm(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("add-review", {
+    return res.render("reviews/add-review", {
       title: "Add Review",
       user: req.session.user,
       songs: [],
@@ -174,7 +174,7 @@ async function createReview(req, res) {
     // Check that the user selected one of their own songs.
     // This stops a review from being attached to another user's song.
     if (!selectedSong) {
-      return res.render("add-review", {
+      return res.render("reviews/add-review", {
         title: "Add Review",
         user: req.session.user,
         songs: songs,
@@ -186,7 +186,7 @@ async function createReview(req, res) {
     // All fields are required for a review.
     // If any field is empty, show the form again and keep the typed values.
     if (!title || !comment || !rating) {
-      return res.render("add-review", {
+      return res.render("reviews/add-review", {
         title: "Add Review",
         user: req.session.user,
         songs: songs,
@@ -202,7 +202,7 @@ async function createReview(req, res) {
     // Rating must be between 1 and 5.
     // Number.isNaN checks whether the user typed something that is not a valid number.
     if (Number.isNaN(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
-      return res.render("add-review", {
+      return res.render("reviews/add-review", {
         title: "Add Review",
         user: req.session.user,
         songs: songs,
@@ -230,7 +230,7 @@ async function createReview(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("add-review", {
+    return res.render("reviews/add-review", {
       title: "Add Review",
       user: req.session.user,
       songs: songs,
@@ -254,7 +254,7 @@ async function showEditReviewForm(req, res) {
     // If reviewId is missing, we do not know which review to edit.
     // In that case, show the form with an error message instead.
     if (!reviewId) {
-      return res.render("edit-review", {
+      return res.render("reviews/edit-review", {
         title: "Edit Review",
         user: req.session.user,
         songs: songs,
@@ -269,7 +269,7 @@ async function showEditReviewForm(req, res) {
     // Stop if the review does not exist or belongs to another user.
     // This protects the edit page from exposing data across accounts.
     if (!review || String(review.userId) !== String(req.session.user.id)) {
-      return res.render("edit-review", {
+      return res.render("reviews/edit-review", {
         title: "Edit Review",
         user: req.session.user,
         songs: songs,
@@ -281,7 +281,7 @@ async function showEditReviewForm(req, res) {
     // review.songId comes from the saved review document in MongoDB.
     // We check whether that song appears inside the current user's allowed song list.
     if (!findSongById(songs, String(review.songId))) {
-      return res.render("edit-review", {
+      return res.render("reviews/edit-review", {
         title: "Edit Review",
         user: req.session.user,
         songs: songs,
@@ -292,7 +292,7 @@ async function showEditReviewForm(req, res) {
 
     // Send the existing review values into the edit page.
     // String(review.songId) is used so the dropdown can compare it with option values from HTML.
-    return res.render("edit-review", {
+    return res.render("reviews/edit-review", {
       title: "Edit Review",
       user: req.session.user,
       songs: songs,
@@ -311,7 +311,7 @@ async function showEditReviewForm(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("edit-review", {
+    return res.render("reviews/edit-review", {
       title: "Edit Review",
       user: req.session.user,
       songs: songs,
@@ -354,7 +354,7 @@ async function editReview(req, res) {
     // Stop if the review does not exist or belongs to another user.
     // This prevents cross-user updates.
     if (!review || String(review.userId) !== String(req.session.user.id)) {
-      return res.render("edit-review", {
+      return res.render("reviews/edit-review", {
         title: "Edit Review",
         user: req.session.user,
         songs: songs,
@@ -366,7 +366,7 @@ async function editReview(req, res) {
     // Make sure the new song choice also belongs to the current user.
     // This prevents the review from being moved to another user's song.
     if (!selectedSong) {
-      return res.render("edit-review", {
+      return res.render("reviews/edit-review", {
         title: "Edit Review",
         user: req.session.user,
         songs: songs,
@@ -378,7 +378,7 @@ async function editReview(req, res) {
     // All fields are required before we update the review.
     // If not, show the same form again and keep the input values.
     if (!title || !comment || !rating) {
-      return res.render("edit-review", {
+      return res.render("reviews/edit-review", {
         title: "Edit Review",
         user: req.session.user,
         songs: songs,
@@ -393,7 +393,7 @@ async function editReview(req, res) {
     // Rating must be between 1 and 5.
     // This keeps review documents consistent in MongoDB.
     if (Number.isNaN(ratingNumber) || ratingNumber < 1 || ratingNumber > 5) {
-      return res.render("edit-review", {
+      return res.render("reviews/edit-review", {
         title: "Edit Review",
         user: req.session.user,
         songs: songs,
@@ -420,7 +420,7 @@ async function editReview(req, res) {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const songs = await loadUserSongs(playlists);
 
-    return res.render("edit-review", {
+    return res.render("reviews/edit-review", {
       title: "Edit Review",
       user: req.session.user,
       songs: songs,
@@ -446,7 +446,7 @@ async function deleteReview(req, res) {
       const songs = await loadUserSongs(playlists);
       attachSongDetailsToReviews(reviews, songs);
 
-      return res.render("review-list", {
+      return res.render("reviews/review-list", {
         title: "All Reviews",
         user: req.session.user,
         reviews: reviews,
@@ -464,7 +464,7 @@ async function deleteReview(req, res) {
       const songs = await loadUserSongs(playlists);
       attachSongDetailsToReviews(reviews, songs);
 
-      return res.render("review-list", {
+      return res.render("reviews/review-list", {
         title: "All Reviews",
         user: req.session.user,
         reviews: reviews,
@@ -481,7 +481,7 @@ async function deleteReview(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("review-list", {
+    return res.render("reviews/review-list", {
       title: "All Reviews",
       user: req.session.user,
       reviews: [],

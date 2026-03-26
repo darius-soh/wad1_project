@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 // Show the login page with empty fields.
 // This only opens the page and does not check any password yet.
 exports.loginGet = (req,res) => {
-    res.render("login", {
+    res.render("auth/login", {
       username: "",
       password: "",
       user: null,
@@ -22,7 +22,7 @@ exports.loginPost = async (req,res) => {
     // If no document is found, the login cannot continue.
     const user = await User.getUserByUsername(username);
     if (!user){
-        return res.render("login", {
+        return res.render("auth/login", {
           username, 
           password:"", 
           user: null, 
@@ -36,7 +36,7 @@ exports.loginPost = async (req,res) => {
     if (!match) {
         // Password mismatch means the username exists but the password is wrong.
         // Show the login page again with an error message.
-        return res.render("login", {
+        return res.render("auth/login", {
           username, 
           password:"", 
           user: null, 
@@ -59,7 +59,7 @@ exports.loginPost = async (req,res) => {
 // Show the registration page with empty fields.
 // This only opens the form and does not save anything yet.
 exports.registerGet = (req,res) => {
-    res.render("register", {
+    res.render("auth/register", {
       username:"", 
       user: null, 
       password:"", 
@@ -76,7 +76,7 @@ exports.registerPost = async (req,res) => {
     // This prevents two different users from sharing the same username.
     const existingUser = await User.getUserByUsername(username);
     if (existingUser) {
-        return res.render("register", {
+        return res.render("auth/register", {
           username: "",
           password: "",
           user: null,
@@ -87,7 +87,7 @@ exports.registerPost = async (req,res) => {
     // Check password validity using the rules inside the user model.
     // Keeping the rules in one place makes them easier to reuse.
     if (!User.isValidPassword(password)){
-      return res.render("register", {
+      return res.render("auth/register", {
         username: username,
         password: "",
         user: null,
@@ -106,7 +106,7 @@ exports.registerPost = async (req,res) => {
 // Show the change password page.
 // This page is only available after the user is already logged in.
 exports.changePasswordGet = (req, res) => {
-  res.render("change-password", {
+  res.render("auth/change-password", {
     title: "Change Password",
     user: req.session.user,
     error: ""
@@ -122,7 +122,7 @@ exports.changePasswordPost = async (req, res) => {
   // Check if the new password matches the confirmation field.
   // This avoids saving a password different from what the user typed the second time.
   if (newPassword !== confirmPassword) {
-    return res.render("change-password", {
+    return res.render("auth/change-password", {
       title: "Change Password",
       user: req.session.user,
       error: "Passwords do not match"
@@ -132,7 +132,7 @@ exports.changePasswordPost = async (req, res) => {
   // Check the validity of the new password.
   // The user model contains the password rules for length and character types.
   if (!User.isValidPassword(newPassword)){
-    return res.render("change-password", {
+    return res.render("auth/change-password", {
       title: "Change Password",
       user: req.session.user,
       error: "Password must be at least 8 characters and include uppercase, lowercase, digit and symbol."
@@ -142,7 +142,7 @@ exports.changePasswordPost = async (req, res) => {
   // Prevent the new password from being exactly the same as the old password.
   // This keeps the password change meaningful.
   if (oldPassword === newPassword) {
-    return res.render("change-password", {
+    return res.render("auth/change-password", {
       title: "Change Password",
       user: req.session.user,
       error: "New password cannot be the same as the old password"
@@ -158,7 +158,7 @@ exports.changePasswordPost = async (req, res) => {
   const match = await bcrypt.compare(oldPassword, user.passwordHash);
 
   if (!match) {
-    return res.render("change-password", {
+    return res.render("auth/change-password", {
       title: "Change Password",
       user: req.session.user,
       error: "Old password is incorrect"

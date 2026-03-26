@@ -16,7 +16,7 @@ async function listGenres(req, res) {
   try {
     const genres = await genreModel.getAllGenres(req.session.user.id);
 
-    return res.render("genre-list", {
+    return res.render("genres/genre-list", {
       title: "All Genres",
       user: req.session.user,
       genres: genres,
@@ -25,7 +25,7 @@ async function listGenres(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("genre-list", {
+    return res.render("genres/genre-list", {
       title: "All Genres",
       user: req.session.user,
       genres: [],
@@ -37,7 +37,7 @@ async function listGenres(req, res) {
 // Open the add genre page with empty input values.
 // No database work is needed here because we are only showing the form.
 function showAddGenreForm(req, res) {
-  return res.render("add-genre", {
+  return res.render("genres/add-genre", {
     title: "Add Genre",
     user: req.session.user,
     error: "",
@@ -55,7 +55,7 @@ async function createGenre(req, res) {
     // Both fields are required before we try to save anything in MongoDB.
     // If either field is missing, show the same form again and keep the user's input.
     if (!name || !description) {
-      return res.render("add-genre", {
+      return res.render("genres/add-genre", {
         title: "Add Genre",
         user: req.session.user,
         error: "All fields are required.",
@@ -81,7 +81,7 @@ async function createGenre(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("add-genre", {
+    return res.render("genres/add-genre", {
       title: "Add Genre",
       user: req.session.user,
       error: "Something went wrong.",
@@ -103,7 +103,7 @@ async function showEditGenreForm(req, res) {
     // Read the genre ID from the URL query string.
     // Without an ID, the controller does not know which genre to load.
     if (!genreId) {
-      return res.render("edit-genre", {
+      return res.render("genres/edit-genre", {
         title: "Edit Genre",
         user: req.session.user,
         error: "Genre not found.",
@@ -116,7 +116,7 @@ async function showEditGenreForm(req, res) {
     // Check that the genre exists and belongs to the logged-in user.
     // This prevents one user from editing another user's data.
     if (!genre || String(genre.userId) !== String(req.session.user.id)) {
-      return res.render("edit-genre", {
+      return res.render("genres/edit-genre", {
         title: "Edit Genre",
         user: req.session.user,
         error: "Genre not found.",
@@ -124,7 +124,7 @@ async function showEditGenreForm(req, res) {
       });
     }
 
-    return res.render("edit-genre", {
+    return res.render("genres/edit-genre", {
       title: "Edit Genre",
       user: req.session.user,
       error: "",
@@ -137,7 +137,7 @@ async function showEditGenreForm(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("edit-genre", {
+    return res.render("genres/edit-genre", {
       title: "Edit Genre",
       user: req.session.user,
       error: "Something went wrong.",
@@ -165,7 +165,7 @@ async function editGenre(req, res) {
     // Load the current genre from MongoDB first.
     // We do this to confirm that the genre exists and belongs to this user.
     if (!genre || String(genre.userId) !== String(req.session.user.id)) {
-      return res.render("edit-genre", {
+      return res.render("genres/edit-genre", {
         title: "Edit Genre",
         user: req.session.user,
         error: "Genre not found.",
@@ -176,7 +176,7 @@ async function editGenre(req, res) {
     // Both fields are required before updating the genre document.
     // If not, re-render the form so the user can correct the missing input.
     if (!name || !description) {
-      return res.render("edit-genre", {
+      return res.render("genres/edit-genre", {
         title: "Edit Genre",
         user: req.session.user,
         error: "All fields are required.",
@@ -197,7 +197,7 @@ async function editGenre(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("edit-genre", {
+    return res.render("genres/edit-genre", {
       title: "Edit Genre",
       user: req.session.user,
       error: "Something went wrong.",
@@ -217,7 +217,7 @@ async function deleteGenre(req, res) {
     if (!genreId) {
       const genres = await genreModel.getAllGenres(req.session.user.id);
 
-      return res.render("genre-list", {
+      return res.render("genres/genre-list", {
         title: "All Genres",
         user: req.session.user,
         genres: genres,
@@ -232,7 +232,7 @@ async function deleteGenre(req, res) {
     if (!genre || String(genre.userId) !== String(req.session.user.id)) {
       const genres = await genreModel.getAllGenres(req.session.user.id);
 
-      return res.render("genre-list", {
+      return res.render("genres/genre-list", {
         title: "All Genres",
         user: req.session.user,
         genres: genres,
@@ -250,7 +250,7 @@ async function deleteGenre(req, res) {
   } catch (error) {
     console.error(error);
 
-    return res.render("genre-list", {
+    return res.render("genres/genre-list", {
       title: "All Genres",
       user: req.session.user,
       genres: [],
