@@ -55,8 +55,6 @@ server.js
 2. Fill in:
    DB=your MongoDB connection string
    SECRET=your session secret
-   SPOTIFY_CLIENT_ID=optional, only needed for Spotify song search
-   SPOTIFY_CLIENT_SECRET=optional, only needed for Spotify song search
 3. npm install
 4. npm start
 ```
@@ -320,16 +318,10 @@ GET /songs/view?id=...   [auth]
 ### Create
 
 ```text
-GET /songs/add?playlistId=...&spotifyQuery=...&selectedTitle=...&selectedArtist=...&selectedArtistId=...&selectedAlbum=...   [auth]
+GET /songs/add?playlistId=...   [auth]
   -> loadUserPlaylists(userId)                         [MongoDB]
   -> loadGenreNames(userId, "")                        [default genres + custom genres]
-  -> if spotifyQuery exists:
-       getSpotifyAccessToken()                         [Spotify client credentials flow]
-       searchSpotifyTracks(spotifyQuery)               [Spotify search API]
-  -> if selectedArtistId exists:
-       getSpotifyArtistDetails(selectedArtistId)       [Spotify artist API]
-  -> if Spotify env vars are missing or the API call fails -> keep the page open and show spotifyError
-  -> render views/songs/add-song.ejs with formData, Spotify results, and artist insight
+  -> render views/songs/add-song.ejs with empty formData or a pre-selected playlist
 
 POST /songs/add   [auth]
   -> req.body: { playlistId, title, artist, album, genre }

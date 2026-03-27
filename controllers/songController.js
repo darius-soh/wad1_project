@@ -115,124 +115,6 @@ function buildEmptySongFormData(playlistId) {
   };
 }
 
-// Ask Spotify for an access token using the client credentials flow.
-// This token is needed before the app can call Spotify's search endpoint.
-async function getSpotifyAccessToken() {
-  const clientId = process.env.SPOTIFY_CLIENT_ID;
-  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-
-  // Stop early if the Spotify environment variables were not added yet.
-  if (!clientId || !clientSecret) {
-    throw new Error("Spotify search is not configured.");
-  }
-
-  // Spotify expects the client ID and secret to be combined and encoded.
-  // The Authorization header uses Basic followed by a base64 string.
-  const encodedCredentials = Buffer.from(clientId + ":" + clientSecret).toString("base64");
-
-  const response = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Authorization": "Basic " + encodedCredentials
-    },
-    body: "grant_type=client_credentials"
-  });
-
-  // If Spotify rejects the request, stop and show an error on the page.
-  if (!response.ok) {
-    throw new Error("Could not connect to Spotify.");
-  }
-
-  const tokenData = await response.json();
-
-  return tokenData.access_token;
-}
-
-// Search Spotify for tracks using the text typed by the user.
-// We keep only the fields that help fill in our own song form.
-async function searchSpotifyTracks(searchText) {
-  const accessToken = await getSpotifyAccessToken();
-
-  // Build the Spotify search URL using the user's text.
-  // encodeURIComponent keeps spaces and special characters safe in the URL.
-  const searchUrl =
-    "https://api.spotify.com/v1/search?type=track&limit=5&q=" +
-    encodeURIComponent(searchText);
-
-  const response = await fetch(searchUrl, {
-    method: "GET",
-    headers: {
-      "Authorization": "Bearer " + accessToken
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("Spotify search failed.");
-  }
-
-  const spotifyData = await response.json();
-  const results = [];
-
-  // Each result is reduced to simple fields that our EJS page can show clearly.
-  if (spotifyData.tracks && spotifyData.tracks.items) {
-    for (const track of spotifyData.tracks.items) {
-      let artistNames = "";
-
-      // Join all artist names into one simple comma-separated string.
-      for (let i = 0; i < track.artists.length; i++) {
-        if (i > 0) {
-          artistNames = artistNames + ", ";
-        }
-
-        artistNames = artistNames + track.artists[i].name;
-      }
-
-      results.push({
-        spotifyId: track.id,
-        title: track.name || "",
-        artist: artistNames,
-        artistId: track.artists && track.artists.length > 0 ? track.artists[0].id : "",
-        artistName: track.artists && track.artists.length > 0 ? track.artists[0].name : "",
-        album: track.album ? track.album.name : "",
-        spotifyUrl:
-          track.external_urls && track.external_urls.spotify
-            ? track.external_urls.spotify
-            : ""
-      });
-    }
-  }
-
-  return results;
-}
-
-// Load one artist from Spotify after the user chooses a song result.
-// The add song page uses this to show a small artist insight box.
-async function getSpotifyArtistDetails(artistId) {
-  const accessToken = await getSpotifyAccessToken();
-
-  const response = await fetch("https://api.spotify.com/v1/artists/" + encodeURIComponent(artistId), {
-    method: "GET",
-    headers: {
-      "Authorization": "Bearer " + accessToken
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("Could not load Spotify artist details.");
-  }
-
-  const artistData = await response.json();
-
-  return {
-    name: artistData.name || "",
-    spotifyUrl:
-      artistData.external_urls && artistData.external_urls.spotify
-        ? artistData.external_urls.spotify
-        : ""
-  };
-}
-
 // Show all songs for the logged-in user.
 // We load the user's playlists first, then all songs inside those playlists.
 async function listSongs(req, res) {
@@ -347,54 +229,10 @@ async function showAddSongForm(req, res) {
   // playlistId may come from a URL like /songs/add?playlistId=...
   // If present, it can be used to pre-select one playlist in the form.
   const playlistId = String(req.query.playlistId || "").trim();
-  const spotifyQuery = String(req.query.spotifyQuery || "").trim();
-  const selectedTitle = String(req.query.selectedTitle || "").trim();
-  const selectedArtist = String(req.query.selectedArtist || "").trim();
-  const selectedArtistId = String(req.query.selectedArtistId || "").trim();
-  const selectedAlbum = String(req.query.selectedAlbum || "").trim();
-  
+
   try {
     const playlists = await loadUserPlaylists(req.session.user.id);
     const genres = await loadGenreNames(req.session.user.id, "");
-    const formData = buildEmptySongFormData(playlistId);
-    let spotifyResults = [];
-    let spotifyError = "";
-    let artistInsight = null;
-
-    // If the user selected one Spotify result, use it to pre-fill the local form.
-    if (selectedTitle) {
-      formData.title = selectedTitle;
-    }
-
-    if (selectedArtist) {
-      formData.artist = selectedArtist;
-    }
-
-    if (selectedAlbum) {
-      formData.album = selectedAlbum;
-    }
-
-    // If one Spotify song was chosen, load a small artist summary for the page.
-    if (selectedArtistId) {
-      try {
-        artistInsight = await getSpotifyArtistDetails(selectedArtistId);
-      } catch (artistError) {
-        spotifyError = artistError.message;
-      }
-    }
-
-    // Only call Spotify when the user actually typed a search query.
-    if (spotifyQuery) {
-      try {
-        spotifyResults = await searchSpotifyTracks(spotifyQuery);
-
-        if (spotifyResults.length === 0) {
-          spotifyError = "No Spotify songs were found for that search.";
-        }
-      } catch (spotifySearchError) {
-        spotifyError = spotifySearchError.message;
-      }
-    }
 
     return res.render("songs/add-song", {
       title: "Add Song",
@@ -402,11 +240,7 @@ async function showAddSongForm(req, res) {
       playlists: playlists,
       genres: genres,
       error: "",
-      formData: formData,
-      spotifyQuery: spotifyQuery,
-      spotifyResults: spotifyResults,
-      spotifyError: spotifyError,
-      artistInsight: artistInsight
+      formData: buildEmptySongFormData(playlistId)
     });
   } catch (error) {
     console.error(error);
@@ -417,18 +251,7 @@ async function showAddSongForm(req, res) {
       playlists: [],
       genres: defaultGenres,
       error: "Something went wrong.",
-      formData: {
-        songId: "",
-        playlistId: playlistId,
-        title: selectedTitle,
-        artist: selectedArtist,
-        album: selectedAlbum,
-        genre: ""
-      },
-      spotifyQuery: spotifyQuery,
-      spotifyResults: [],
-      spotifyError: "",
-      artistInsight: null
+      formData: buildEmptySongFormData(playlistId)
     });
   }
 }
@@ -467,11 +290,7 @@ async function createSong(req, res) {
         playlists: playlists,
         genres: genres,
         error: "Playlist not found.",
-        formData: formData,
-        spotifyQuery: "",
-        spotifyResults: [],
-        spotifyError: "",
-        artistInsight: null
+        formData: formData
       });
     }
 
@@ -483,11 +302,7 @@ async function createSong(req, res) {
         playlists: playlists,
         genres: genres,
         error: "Title, artist, album, and genre are required.",
-        formData: formData,
-        spotifyQuery: "",
-        spotifyResults: [],
-        spotifyError: "",
-        artistInsight: null
+        formData: formData
       });
     }
 
@@ -515,11 +330,7 @@ async function createSong(req, res) {
       playlists: await loadUserPlaylists(req.session.user.id),
       genres: await loadGenreNames(req.session.user.id, genre),
       error: "Something went wrong.",
-      formData: formData,
-      spotifyQuery: "",
-      spotifyResults: [],
-      spotifyError: "",
-      artistInsight: null
+      formData: formData
     });
   }
 }

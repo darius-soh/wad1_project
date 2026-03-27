@@ -3,7 +3,7 @@ const songModel = require("../models/songModel");
 const reviewModel = require("../models/reviewModel");
 const likedSongModel = require("../models/likedSongModel");
 
-// Sort playlists using simple comparisons taught in school.
+// Sort playlists using simple name comparisons.
 // Each branch changes the same array in place before it is rendered.
 function sortPlaylists(playlists, sortType) {
   if (sortType === "A-Z") {

@@ -12,88 +12,9 @@
   <p>No playlists found. <a href="/playlists/add">Create a playlist first</a></p>
 <% } %>
 
-<% if (playlists && playlists.length > 0) { %>
-  <p><strong>Step 1:</strong> Search Spotify to help fill the song details.</p>
-  <form action="/songs/add" method="GET">
-    <input type="hidden" name="playlistId" value="<%= formData.playlistId %>">
-    <label for="spotifyQuery">Search by song title or artist</label>
-    <br>
-    <input id="spotifyQuery" name="spotifyQuery" type="text" value="<%= spotifyQuery %>">
-    <br><br>
-    <button type="submit">Search Spotify</button>
-  </form>
-  <br>
-<% } %>
-
-<% if (spotifyError) { %>
-  <p><%= spotifyError %></p>
-<% } %>
-
-<% if (spotifyResults && spotifyResults.length > 0) { %>
-  <p><strong>Step 2:</strong> Choose one Spotify result to fill the form.</p>
-  <table width="100%" border="1">
-    <tr>
-      <th>Title</th>
-      <th>Artist</th>
-      <th>Album</th>
-      <th>Spotify</th>
-      <th>Action</th>
-    </tr>
-
-    <% for (const result of spotifyResults) { %>
-      <tr align="center">
-        <td><%= result.title %></td>
-        <td><%= result.artist %></td>
-        <td><%= result.album %></td>
-        <td>
-          <% if (result.spotifyUrl) { %>
-            <a href="<%= result.spotifyUrl %>" target="_blank">Open</a>
-          <% } else { %>
-            Not available
-          <% } %>
-        </td>
-        <td>
-          <form action="/songs/add" method="GET">
-            <input type="hidden" name="playlistId" value="<%= formData.playlistId %>">
-            <input type="hidden" name="spotifyQuery" value="<%= spotifyQuery %>">
-            <input type="hidden" name="selectedTitle" value="<%= result.title %>">
-            <input type="hidden" name="selectedArtist" value="<%= result.artist %>">
-            <input type="hidden" name="selectedArtistId" value="<%= result.artistId %>">
-            <input type="hidden" name="selectedAlbum" value="<%= result.album %>">
-            <button type="submit">Use This Song</button>
-          </form>
-        </td>
-      </tr>
-    <% } %>
-  </table>
-  <br><br>
-<% } %>
-
-<% if (artistInsight) { %>
-  <p><strong>Chosen Spotify Artist</strong></p>
-  <table width="100%" border="1">
-    <tr>
-      <td width="25%"><strong>Name</strong></td>
-      <td><%= artistInsight.name %></td>
-    </tr>
-    <tr>
-      <td><strong>Spotify</strong></td>
-      <td>
-        <% if (artistInsight.spotifyUrl) { %>
-          <a href="<%= artistInsight.spotifyUrl %>" target="_blank">Open Artist in Spotify</a>
-        <% } else { %>
-          Not available
-        <% } %>
-      </td>
-    </tr>
-  </table>
-  <br><br>
-<% } %>
-
 <!-- Add song form -->
 <!-- The playlist dropdown decides which playlist this new song should belong to -->
 <% if (playlists && playlists.length > 0) { %>
-  <p><strong>Step 3:</strong> Review the details below and save the song to our app.</p>
   <form action="/songs/add" method="POST">
     <label for="playlistId">Playlist</label>
     <br>
