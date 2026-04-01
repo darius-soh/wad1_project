@@ -44,10 +44,6 @@ const server = express();
 // Without this, req.body would be empty when HTML forms are submitted.
 server.use(express.urlencoded({ extended: true }));
 
-// Serve statis files from 'public' directory
-// Files like images can be loaded directly by the browser from /public.
-server.use(express.static(path.join(__dirname, "public")));
-
 // Parse JSON data from requests
 // This is useful if any request sends JSON instead of normal form data.
 server.use(express.json());
