@@ -4,12 +4,10 @@
 <table width="100%">
   <tr>
     <td>
-      <h1>Liked Songs</h1>
-    </td>
-    <td align="right">
-      <a href="/liked-songs/add">
-        <button type="button">Add a liked song</button>
-      </a>
+      <h2>Liked Songs</h2>
+        <form action="/liked-songs/add" method="GET">
+          <button type="submit">Add a liked song</button>
+        </form>
     </td>
   </tr>
 </table>
@@ -26,40 +24,54 @@
 <% } %>
 
 <!-- Liked songs table -->
-<!-- Each row shows one liked song together with its related song and playlist details -->
+<!-- Each liked song is shown in its own detail table -->
 <% if (likedSongs && likedSongs.length > 0) { %>
-  <table width="100%" border="1">
-    <tr>
-      <th>Song</th>
-      <th>Artist</th>
-      <th>Album</th>
-      <th>Genre</th>
-      <th>Playlist</th>
-      <th>Note</th>
-      <th>Created</th>
-      <th>Action</th>
-    </tr>
-
-    <% for (const likedSong of likedSongs) { %>
-      <tr align="center">
+  <% for (const likedSong of likedSongs) { %>
+    <table width="50%" border="1">
+      <tr>
+        <th style="width: 140px; text-align: left;">Song</th>
         <td><%= likedSong.songTitle %></td>
+      </tr>
+      <tr>
+        <th style="width: 140px; text-align: left;">Artist</th>
         <td><%= likedSong.artist %></td>
+      </tr>
+      <tr>
+        <th style="width: 140px; text-align: left;">Album</th>
         <td><%= likedSong.album %></td>
+      </tr>
+      <tr>
+        <th style="width: 140px; text-align: left;">Genre</th>
         <td><%= likedSong.genre %></td>
+      </tr>
+      <tr>
+        <th style="width: 140px; text-align: left;">Playlist</th>
         <td><%= likedSong.playlistName %></td>
+      </tr>
+      <tr>
+        <th style="width: 140px; text-align: left;">Note</th>
         <td><%= likedSong.note %></td>
+      </tr>
+      <tr>
+        <th style="width: 140px; text-align: left;">Created</th>
         <td><%= likedSong.createdAt.toLocaleString() %></td>
+      </tr>
+      <tr>
+        <th style="width: 140px; text-align: left;">Action</th>
         <td>
-          <a href="/liked-songs/edit?likedSongId=<%= likedSong._id %>">Edit</a>
-          <br>
-          <form action="/liked-songs/delete" method="POST">
+          <form action="/liked-songs/edit" method="GET" style="display: inline-block;">
             <input type="hidden" name="likedSongId" value="<%= likedSong._id %>">
-            <button type="submit">Delete</button>
+            <button type="submit" style="width: 55px;">Edit</button>
+          </form>
+          <form action="/liked-songs/delete" method="POST" style="display: inline-block;">
+            <input type="hidden" name="likedSongId" value="<%= likedSong._id %>">
+            <button type="submit" onclick="return confirm('Are you sure you want to delete this?');">Delete</button>
           </form>
         </td>
       </tr>
-    <% } %>
-  </table>
+    </table>
+    <br>
+  <% } %>
 <% } %>
 
 </main>

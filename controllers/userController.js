@@ -15,8 +15,21 @@ exports.loginGet = (req,res) => {
 // Read the submitted login form, find the user, and compare the password hash.
 // If the login is valid, store a small user object inside the session.
 exports.loginPost = async (req,res) => {
+
+  try {
     // Read the username and password from the submitted form.
-    const {username,password} = req.body;
+    const username = (req.body.username || "").trim();
+    const password = req.body.password || "";
+
+    // Ensure username and password fields are entered.
+    if (!username || !password) {
+      return res.render("auth/login", {
+        username,
+        password: "",
+        user: null,
+        error: "Username and password are required."
+      });
+    }
 
     // Find the user document in MongoDB by username.
     // If no document is found, the login cannot continue.
@@ -54,6 +67,16 @@ exports.loginPost = async (req,res) => {
     // Redirect to the playlists page after login.
     // The session now exists, so protected routes will allow access.
     res.redirect("/playlists")
+  } catch (error) {
+    console.error(error);
+
+    return res.render("auth/login", {
+      username: (req.body.username || "").trim(),
+      password: "",
+      user: null,
+      error: "Something went wrong."
+    });
+  }
 };
 
 // Show the registration page with empty fields.
@@ -70,7 +93,20 @@ exports.registerGet = (req,res) => {
 // Read the submitted registration form, validate it, and create a new user account.
 // If something is invalid, show the same page again with an error message.
 exports.registerPost = async (req,res) => {
-    const {username, password} = req.body;
+
+  try {
+    const username = (req.body.username || "").trim();
+    const password = req.body.password || "";
+
+    // Ensure all fields are filled.
+    if (!username || !password) {
+      return res.render("auth/register", {
+        username,
+        password: "",
+        user: null,
+        error: "Username and password are required."
+      });
+    }
 
     // Check if the username already exists.
     // This prevents two different users from sharing the same username.
@@ -101,6 +137,16 @@ exports.registerPost = async (req,res) => {
 
     // Redirect to the login page after successful registration.
     res.redirect("/login");
+  } catch (error) {
+    console.error(error);
+
+    return res.render("auth/register", {
+      username: (req.body.username || "").trim(),
+      password: "",
+      user: null,
+      error: "Something went wrong."
+    });
+  }
 };
 
 // Show the change password page.
@@ -117,67 +163,96 @@ exports.changePasswordGet = (req, res) => {
 // This route is protected, so only a logged-in user can reach it.
 exports.changePasswordPost = async (req, res) => {
   // Read the three password fields from the submitted form.
-  const { oldPassword, newPassword, confirmPassword } = req.body;
+  try {
+    const oldPassword = req.body.oldPassword || "";
+    const newPassword = req.body.newPassword || "";
+    const confirmPassword = req.body.confirmPassword || "";
 
-  // Check if the new password matches the confirmation field.
-  // This avoids saving a password different from what the user typed the second time.
-  if (newPassword !== confirmPassword) {
+    // Ensure all fields are filled.
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.render("auth/change-password", {
+        title: "Change Password",
+        user: req.session.user,
+        error: "All password fields are required."
+      });
+    }
+
+    // Check if the new password matches the confirmation field.
+    // This avoids saving a password different from what the user typed the second time.
+    if (newPassword !== confirmPassword) {
+      return res.render("auth/change-password", {
+        title: "Change Password",
+        user: req.session.user,
+        error: "Passwords do not match"
+      });
+    }
+
+    // Check the validity of the new password.
+    // The user model contains the password rules for length and character types.
+    if (!User.isValidPassword(newPassword)){
+      return res.render("auth/change-password", {
+        title: "Change Password",
+        user: req.session.user,
+        error: "Password must be at least 8 characters and include uppercase, lowercase, digit and symbol."
+      }); 
+    }
+
+    // Prevent the new password from being exactly the same as the old password.
+    // This keeps the password change meaningful.
+    if (oldPassword === newPassword) {
+      return res.render("auth/change-password", {
+        title: "Change Password",
+        user: req.session.user,
+        error: "New password cannot be the same as the old password"
+      });
+    }
+
+    // Load the current user document from MongoDB.
+    // We need the saved password hash to verify the old password.
+    const user = await User.getUserByUsername(req.session.user.username);
+
+    if (!user) {
+      return res.render("auth/change-password", {
+        title: "Change Password",
+        user: req.session.user,
+        error: "User not found."
+      });
+    }
+    
+    // Check if the old password is correct.
+    // The user must prove they know the current password before it can be changed.
+    const match = await bcrypt.compare(oldPassword, user.passwordHash);
+
+    if (!match) {
+      return res.render("auth/change-password", {
+        title: "Change Password",
+        user: req.session.user,
+        error: "Old password is incorrect"
+      });
+    }
+
+    // Hash the new password before saving it.
+    // The original plain password is never stored in the database.
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Save the new password hash to MongoDB.
+    // The model updates the passwordHash field for this user.
+    await User.changePassword(req.session.user.username, passwordHash);
+
+    // Destroy the session after the password is changed.
+    // Once the session is cleared, send the user back to the login page.
+    req.session.destroy(() => {
+      res.redirect("/login");
+    });
+  } catch (error) {
+    console.error(error);
+
     return res.render("auth/change-password", {
       title: "Change Password",
       user: req.session.user,
-      error: "Passwords do not match"
+      error: "Something went wrong."  
     });
   }
-
-  // Check the validity of the new password.
-  // The user model contains the password rules for length and character types.
-  if (!User.isValidPassword(newPassword)){
-    return res.render("auth/change-password", {
-      title: "Change Password",
-      user: req.session.user,
-      error: "Password must be at least 8 characters and include uppercase, lowercase, digit and symbol."
-    }); 
-  }
-
-  // Prevent the new password from being exactly the same as the old password.
-  // This keeps the password change meaningful.
-  if (oldPassword === newPassword) {
-    return res.render("auth/change-password", {
-      title: "Change Password",
-      user: req.session.user,
-      error: "New password cannot be the same as the old password"
-    });
-  }
-
-  // Load the current user document from MongoDB.
-  // We need the saved password hash to verify the old password.
-  const user = await User.getUserByUsername(req.session.user.username);
-  
-  // Check if the old password is correct.
-  // The user must prove they know the current password before it can be changed.
-  const match = await bcrypt.compare(oldPassword, user.passwordHash);
-
-  if (!match) {
-    return res.render("auth/change-password", {
-      title: "Change Password",
-      user: req.session.user,
-      error: "Old password is incorrect"
-    });
-  }
-
-  // Hash the new password before saving it.
-  // The original plain password is never stored in the database.
-  const passwordHash = await bcrypt.hash(newPassword, 10);
-
-  // Save the new password hash to MongoDB.
-  // The model updates the passwordHash field for this user.
-  await User.changePassword(req.session.user.username, passwordHash);
-
-  // Destroy the session after the password is changed.
-  // Once the session is cleared, send the user back to the login page.
-  req.session.destroy(() => {
-    res.redirect("/login");
-  });
 };
 
 // Destroy the current session and send the user back to the login page.

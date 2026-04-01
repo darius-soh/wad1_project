@@ -87,9 +87,8 @@ localhost:8000
 |
 |-- /songs                     -> [auth on every route in songRoutes.js]
 |   |-- GET  /                 -> songController.listSongs -> views/songs/song-list.ejs
-|   |-- GET  /add?...          -> songController.showAddSongForm -> views/songs/add-song.ejs
+|   |-- GET  /add?playlistId=... -> songController.showAddSongForm -> views/songs/add-song.ejs
 |   |-- POST /add              -> songController.createSong
-|   |-- GET  /view?id=...      -> songController.showSong -> views/songs/song-detail.ejs
 |   |-- GET  /edit?songId=...  -> songController.showEditSongForm -> views/songs/edit-song.ejs
 |   |-- POST /edit             -> songController.editSong
 |   `-- POST /delete           -> songController.deleteSong
@@ -163,6 +162,7 @@ GET /register
 
 POST /register
   -> req.body: { username, password }
+  -> if username or password missing -> re-render register.ejs with "Username and password are required."
   -> User.getUserByUsername(username)          [MongoDB: findOne]
   -> if username already exists -> re-render register.ejs with "Username taken"
   -> User.isValidPassword(password)            [must be 8+ chars with upper, lower, digit, symbol from @!#$%^&*]
@@ -179,6 +179,7 @@ GET /login
 
 POST /login
   -> req.body: { username, password }
+  -> if username or password missing -> re-render login.ejs with "Username and password are required."
   -> User.getUserByUsername(username)          [MongoDB: findOne]
   -> if not found -> re-render login.ejs with "User not found."
   -> bcrypt.compare(password, user.passwordHash)
@@ -195,11 +196,13 @@ GET /change-password   [auth]
 
 POST /change-password  [auth]
   -> req.body: { oldPassword, newPassword, confirmPassword }
+  -> if any field is missing -> re-render with "All password fields are required."
   -> if newPassword !== confirmPassword -> re-render with "Passwords do not match"
   -> User.isValidPassword(newPassword)
   -> if invalid -> re-render with password rule error
   -> if oldPassword === newPassword -> re-render with "New password cannot be the same as the old password"
   -> User.getUserByUsername(req.session.user.username)   [MongoDB: findOne]
+  -> if user not found -> re-render with "User not found."
   -> bcrypt.compare(oldPassword, user.passwordHash)
   -> if old password mismatch -> re-render with "Old password is incorrect"
   -> bcrypt.hash(newPassword, 10)
@@ -305,16 +308,6 @@ GET /songs?genre=...   [auth]
   -> render views/songs/song-list.ejs
 ```
 
-### Read (Detail)
-
-```text
-GET /songs/view?id=...   [auth]
-  -> songModel.getSongById(songId)                     [MongoDB: findById]
-  -> loadUserPlaylists(userId)                         [MongoDB: user's playlists]
-  -> findPlaylistForSong(song, playlists)              [ownership check]
-  -> render views/songs/song-detail.ejs
-```
-
 ### Create
 
 ```text
@@ -330,7 +323,7 @@ POST /songs/add   [auth]
   -> if playlist missing -> re-render with "Playlist not found."
   -> if title, artist, album, or genre missing -> re-render with validation error
   -> songModel.createSong({ playlistId, title, artist, album, genre })   [MongoDB: insert]
-  -> redirect /songs/view?id=<new song id>
+  -> redirect /playlists/view?id=<playlistId>
 ```
 
 ### Update
@@ -353,7 +346,7 @@ POST /songs/edit   [auth]
   -> if playlist or song invalid -> re-render with error
   -> if title, artist, album, or genre missing -> re-render with validation error
   -> songModel.updateSongById(songId, { playlistId, title, artist, album, genre })   [MongoDB: findByIdAndUpdate]
-  -> redirect /songs/view?id=<songId>
+  -> redirect /playlists/view?id=<playlistId>
 ```
 
 ### Delete

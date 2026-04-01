@@ -24,10 +24,6 @@ router.get("/add", songController.showAddSongForm);
 // POST /songs/add receives the submitted song form and saves it.
 router.post("/add", songController.createSong);
 
-// Show one song.
-// GET /songs/view?id=... opens the details page for one song.
-router.get("/view", songController.showSong);
-
 // Show the edit song page.
 // GET /songs/edit?songId=... loads one song into the edit form.
 router.get("/edit", songController.showEditSongForm);

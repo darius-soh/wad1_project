@@ -48,6 +48,11 @@ async function createUser(username, password) {
 // Keeping the validation here makes the same rules reusable in the controller.
 function isValidPassword(password) {
 
+  // Ensures password is a string
+  if (typeof password !== "string") {
+    return false;
+  }
+
   // Ensures password is at least 8 characters long.
   if (password.length < 8) {
     return false;

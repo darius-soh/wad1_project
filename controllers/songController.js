@@ -154,74 +154,6 @@ async function listSongs(req, res) {
   }
 }
 
-// Show one song.
-// The controller also checks that the song belongs to the current user before showing it.
-async function showSong(req, res) {
-  const songId = (req.query.id || "").trim();
-
-  try {
-    // Check whether a song ID was provided.
-    if (!songId) {
-      return res.render("songs/song-detail", {
-        title: "Song Details",
-        user: req.session.user,
-        song: null,
-        playlist: null,
-        error: "Song not found."
-      });
-    }
-
-    // Load the song document and all playlists owned by this user.
-    // We later match the song back to its parent playlist.
-    const song = await songModel.getSongById(songId);
-    const playlists = await loadUserPlaylists(req.session.user.id);
-
-    // Stop immediately if no song document was found.
-    if (!song) {
-      return res.render("songs/song-detail", {
-        title: "Song Details",
-        user: req.session.user,
-        song: null,
-        playlist: null,
-        error: "Song not found."
-      });
-    }
-
-    // Find the playlist that owns this song.
-    // If no matching playlist is found, this song does not belong to the current user.
-    const playlist = findPlaylistForSong(song, playlists);
-
-    // Stop if this song does not belong to the logged-in user.
-    if (!playlist) {
-      return res.render("songs/song-detail", {
-        title: "Song Details",
-        user: req.session.user,
-        song: null,
-        playlist: null,
-        error: "Song not found."
-      });
-    }
-
-    // Show the song details page.
-    return res.render("songs/song-detail", {
-      title: song.title,
-      user: req.session.user,
-      song: song,
-      playlist: playlist,
-      error: ""
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.render("songs/song-detail", {
-      title: "Song Details",
-      user: req.session.user,
-      song: null,
-      playlist: null,
-      error: "Something went wrong."
-    });
-  }
-}
 
 // Show the add song form.
 // We load the user's playlists so the form can show them in a dropdown.
@@ -317,10 +249,10 @@ async function createSong(req, res) {
     };
 
     // Save the song in MongoDB.
-    const song = await songModel.createSong(songData);
+    await songModel.createSong(songData);
 
-    // Open the song detail page after saving.
-    return res.redirect("/songs/view?id=" + song._id);
+    // Return to the selected playlist so the new song appears in its songs table.
+    return res.redirect("/playlists/view?id=" + playlistId);
   } catch (error) {
     console.error(error);
 
@@ -506,8 +438,8 @@ async function editSong(req, res) {
     // Save the updated song in MongoDB.
     await songModel.updateSongById(songId, updatedData);
 
-    // Open the song detail page after saving.
-    return res.redirect("/songs/view?id=" + songId);
+    // Open the playlist detail page after saving.
+    return res.redirect("/playlists/view?id=" + playlistId);
   } catch (error) {
     console.error(error);
 
@@ -590,7 +522,6 @@ async function deleteSong(req, res) {
 
 module.exports = {
   listSongs: listSongs,
-  showSong: showSong,
   showAddSongForm: showAddSongForm,
   createSong: createSong,
   showEditSongForm: showEditSongForm,
