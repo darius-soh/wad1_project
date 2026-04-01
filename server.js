@@ -89,10 +89,12 @@ server.use("/reviews", reviewRoutes);
 // Any request that starts with /liked-songs will be passed to likedSongRoutes.js.
 server.use("/liked-songs", likedSongRoutes);
 
-// Redirect any unknown routes back to login.
-// If no earlier route matches, the user is sent to a safe starting page.
+// Show a 404 page for unknown routes.
 server.use(function (req, res) {
-  return res.redirect("/login");
+  return res.status(404).render("errors/404", {
+    title: "404 Not Found",
+    user: req.session.user || null
+  });
 });
 
 // Connect to MongoDB using the connection string from config.env.

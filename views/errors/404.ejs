@@ -1,0 +1,15 @@
+<%- include("../common/header", { title: title, user: user }) %>
+
+<h2><%= title %></h2>
+
+<p>The page you requested does not exist.</p>
+
+<% if (user) { %>
+  <p><a href="/playlists">Go back to your playlists</a></p>
+<% } else { %>
+  <p><a href="/login">Go to login</a> or <a href="/register">create an account</a></p>
+<% } %>
+
+</main>
+</body>
+</html>

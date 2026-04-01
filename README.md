@@ -41,7 +41,7 @@ server.js
   -> mount "/genres" -> genreRoutes
   -> mount "/reviews" -> reviewRoutes
   -> mount "/liked-songs" -> likedSongRoutes
-  -> redirect any unknown route to /login
+  -> render a 404 page for any unknown route
   -> connect to MongoDB
   -> start server at http://localhost:8000
 ```
