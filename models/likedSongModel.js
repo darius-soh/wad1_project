@@ -23,9 +23,6 @@ const likedSongSchema = new mongoose.Schema({
   }
 });
 
-// // Ensure liked songs are unique (no duplicates)
-// likedSongSchema.index({ userId: 1, songId: 1 }, { unique: true });
-
 // Create the LikedSong model from the schema.
 // This model gives us helper methods such as find(), create(), update(), and delete().
 const LikedSong = mongoose.model("LikedSong", likedSongSchema);
