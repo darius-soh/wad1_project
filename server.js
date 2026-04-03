@@ -89,6 +89,7 @@ server.use("/reviews", reviewRoutes);
 // Any request that starts with /liked-songs will be passed to likedSongRoutes.js.
 server.use("/liked-songs", likedSongRoutes);
 
+// Serve index.html when accessed directly via /index.html.
 server.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });

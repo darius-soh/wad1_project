@@ -118,3 +118,14 @@ http://localhost:8000/register
 
 - Password requirements:
   At least 8 characters, with at least one uppercase letter, one lowercase letter, one digit, and one symbol.
+
+
+## Team Contributions
+
+| Member   | Feature      | Files |
+|----------|-------------|-------|
+| Jonathan | Playlist    | `models/playlistModel.js`, `controllers/playlistController.js`, `routes/playlistRoutes.js`, `views/playlists/` |
+| Uyen     | Songs       | `models/songModel.js`, `controllers/songController.js`, `routes/songRoutes.js`, `views/songs/` |
+| Darius   | Reviews     | `models/reviewModel.js`, `controllers/reviewController.js`, `routes/reviewRoutes.js`, `views/reviews/` |
+| Faith    | User, Liked Songs | `models/userModel.js`, `controllers/userController.js`, `routes/userRoutes.js`, `views/auth/`, `models/likedSongModel.js`, `controllers/likedSongController.js`, `routes/likedSongRoutes.js`, `views/liked-songs/` |
+| Shannon  | Genre       | `models/genreModel.js`, `controllers/genreController.js`, `routes/genreRoutes.js`, `views/genres/` |
