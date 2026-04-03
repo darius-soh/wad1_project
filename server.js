@@ -89,6 +89,10 @@ server.use("/reviews", reviewRoutes);
 // Any request that starts with /liked-songs will be passed to likedSongRoutes.js.
 server.use("/liked-songs", likedSongRoutes);
 
+server.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Show a 404 page for unknown routes.
 server.use(function (req, res) {
   return res.status(404).render("errors/404", {

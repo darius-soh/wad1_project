@@ -1,6 +1,75 @@
 # Mini Spotify Playlist Manager
 
-## a. How to set up the application
+A full-stack web application that lets users create and manage playlists, songs, reviews, liked songs, and custom genres in one place.
+
+It includes user registration, login, session-based authentication, and CRUD features built with Express, EJS, and MongoDB.
+
+## 📁 Project Structure
+
+```text
+wad_proj/
+├── controllers/
+│   ├── genreController.js
+│   ├── likedSongController.js
+│   ├── playlistController.js
+│   ├── reviewController.js
+│   ├── songController.js
+│   └── userController.js
+├── middleware/
+│   └── auth-middleware.js
+├── models/
+│   ├── genreModel.js
+│   ├── likedSongModel.js
+│   ├── playlistModel.js
+│   ├── reviewModel.js
+│   ├── songModel.js
+│   └── userModel.js
+├── routes/
+│   ├── genreRoutes.js
+│   ├── likedSongRoutes.js
+│   ├── playlistRoutes.js
+│   ├── reviewRoutes.js
+│   ├── songRoutes.js
+│   └── userRoutes.js
+├── views/
+│   ├── auth/
+│   │   ├── change-password.ejs
+│   │   ├── login.ejs
+│   │   └── register.ejs
+│   ├── common/
+│   │   └── header.ejs
+│   ├── errors/
+│   │   └── 404.ejs
+│   ├── genres/
+│   │   ├── add-genre.ejs
+│   │   ├── edit-genre.ejs
+│   │   └── genre-list.ejs
+│   ├── liked-songs/
+│   │   ├── add-liked-song.ejs
+│   │   ├── edit-liked-song.ejs
+│   │   └── liked-song-list.ejs
+│   ├── playlists/
+│   │   ├── add-playlist.ejs
+│   │   ├── edit-playlist.ejs
+│   │   ├── playlist-detail.ejs
+│   │   └── playlist-list.ejs
+│   ├── reviews/
+│   │   ├── add-review.ejs
+│   │   ├── edit-review.ejs
+│   │   └── review-list.ejs
+│   └── songs/
+│       ├── add-song.ejs
+│       ├── edit-song.ejs
+│       └── song-list.ejs
+├── config.env.example
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+└── server.js
+```
+
+## How to set up the application
 
 1. Download or extract the submitted project files into one folder.
 2. Open a terminal in the project root folder.
@@ -18,10 +87,7 @@ DB=your_mongodb_connection_string
 SECRET=your_session_secret
 ```
 
-6. Make sure MongoDB is available.
-   Use either a local MongoDB instance or a MongoDB Atlas connection string in `DB`.
-
-## b. How to run the application
+## How to run the application
 
 1. Start the server from the project root:
 
@@ -41,9 +107,9 @@ http://localhost:8000/index.html
 http://localhost:8000/login
 ```
 
-## c. Username/password details
+## Username/password details
 
-- There is no default seeded username or password included in this project.
+- There is no default username or password included in this project.
 - Create your own account through the registration page:
 
 ```text
