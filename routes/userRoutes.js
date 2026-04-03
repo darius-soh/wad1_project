@@ -4,7 +4,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middleware/auth-middleware');
 
-// Send logged-in users to playlists, otherwise show login page.
+// Send logged-in users to playlists, otherwise show index.html page.
 // This gives the project one simple starting URL: "/".
 router.get("/", (req, res) => {
   if (req.session.user) {
