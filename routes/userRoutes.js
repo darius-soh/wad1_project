@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middleware/auth-middleware');
@@ -9,7 +10,7 @@ router.get("/", (req, res) => {
   if (req.session.user) {
     return res.redirect("/playlists");
   }
-  return res.redirect("/login");
+  return res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // Calls the controller function that renders the login form
