@@ -61,7 +61,7 @@ wad_proj/
 │       ├── add-song.ejs
 │       ├── edit-song.ejs
 │       └── song-list.ejs
-├── config.env.example
+├── config.env (to create)
 ├── index.html
 ├── package-lock.json
 ├── package.json
